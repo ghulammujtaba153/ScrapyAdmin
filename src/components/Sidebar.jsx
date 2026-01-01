@@ -16,6 +16,7 @@ const Sidebar = () => {
         { path: '/user-management', name: 'User Management', icon: <FaUser /> },
         { path: '/subscriptions', name: 'Subscriptions', icon: <FaChartLine /> },
         { path: '/packages', name: 'Packages', icon: <FaBoxOpen /> },
+        { path: "/profile", name: "Profile", icon: <FaUser />}
     ];
 
     return (

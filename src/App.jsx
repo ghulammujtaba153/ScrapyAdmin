@@ -39,6 +39,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/packages" element={<Packages />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
+          
         </Route>
       </Route>
     </Routes>

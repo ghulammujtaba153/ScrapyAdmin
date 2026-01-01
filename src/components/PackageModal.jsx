@@ -9,8 +9,9 @@ const PackageModal = ({ isOpen, onClose, pkg, onSave }) => {
         price: '',
         interval: 'month',
         stripePriceId: '',
-        features: ''
+        features: []
     });
+    const [newFeature, setNewFeature] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -21,7 +22,7 @@ const PackageModal = ({ isOpen, onClose, pkg, onSave }) => {
                 price: pkg.price || '',
                 interval: pkg.interval || 'month',
                 stripePriceId: pkg.stripePriceId || '',
-                features: pkg.features ? pkg.features.join(', ') : ''
+                features: pkg.features || []
             });
         } else {
             setFormData({
@@ -30,10 +31,35 @@ const PackageModal = ({ isOpen, onClose, pkg, onSave }) => {
                 price: '',
                 interval: 'month',
                 stripePriceId: '',
-                features: ''
+                features: []
             });
         }
+        setNewFeature('');
     }, [pkg, isOpen]);
+
+    const addFeature = () => {
+        if (newFeature.trim()) {
+            setFormData(prev => ({
+                ...prev,
+                features: [...prev.features, newFeature.trim()]
+            }));
+            setNewFeature('');
+        }
+    };
+
+    const removeFeature = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            features: prev.features.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleFeatureKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addFeature();
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,7 +73,7 @@ const PackageModal = ({ isOpen, onClose, pkg, onSave }) => {
             const payload = {
                 ...formData,
                 price: Number(formData.price),
-                features: formData.features.split(',').map(f => f.trim()).filter(Boolean)
+                features: formData.features
             };
 
             let res;
@@ -145,15 +171,54 @@ const PackageModal = ({ isOpen, onClose, pkg, onSave }) => {
 
                             <div>
                                 <label className="block text-gray-700 text-sm font-bold mb-2">Features</label>
-                                <p className="text-xs text-gray-500 mb-2">Separate features with commas (e.g., "Full Access, 24/7 Support")</p>
-                                <textarea
-                                    name="features"
-                                    value={formData.features}
-                                    onChange={handleChange}
-                                    rows="3"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-none"
-                                    placeholder="Feature 1, Feature 2, Feature 3"
-                                />
+                                
+                                {/* Feature input with add button */}
+                                <div className="flex gap-2 mb-3">
+                                    <input
+                                        type="text"
+                                        value={newFeature}
+                                        onChange={(e) => setNewFeature(e.target.value)}
+                                        onKeyDown={handleFeatureKeyDown}
+                                        className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                        placeholder="Enter a feature..."
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addFeature}
+                                        className="px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Features list */}
+                                {formData.features.length > 0 && (
+                                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                                        {formData.features.map((feature, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 group hover:border-gray-300 transition-colors"
+                                            >
+                                                <span className="text-gray-700 text-sm">{feature}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFeature(index)}
+                                                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {formData.features.length === 0 && (
+                                    <p className="text-xs text-gray-400 italic">No features added yet</p>
+                                )}
                             </div>
 
                             <div>

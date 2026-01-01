@@ -9,16 +9,47 @@ export const UserAuthContextProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const verifyUser = async () => {
+            const token = localStorage.getItem("token");
+            const storedUser = localStorage.getItem("user");
+            
+            if (!token || !storedUser) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await axios.get(`${BASE_URL}/auth/verifyToken`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                if (res.status === 200 && res.data.user) {
+                    const verifiedUser = res.data.user;
+                    if (verifiedUser.role === "admin") {
+                        setUser(verifiedUser);
+                        localStorage.setItem("user", JSON.stringify(verifiedUser));
+                    } else {
+                        // Not an admin, clear storage
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("token");
+                    }
+                }
+            } catch (error) {
+                console.error("Token verification failed:", error);
+                // Token invalid, clear storage
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        verifyUser();
     }, []);
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post(`${BASE_URL}/login`, { email, password });
+            const res = await axios.post(`${BASE_URL}/auth/login`, { email, password });
             if (res.status === 200) {
                 const { user, token } = res.data;
                 if (user.role !== "admin") {
