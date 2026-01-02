@@ -35,7 +35,11 @@ const Login = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h2 className="mb-6 text-3xl font-bold text-center text-gray-800">Admin Login</h2>
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="w-32 h-22 mx-auto mb-6"
+        />
         {error && (
           <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
             {error}
@@ -87,7 +91,7 @@ const Login = () => {
           </div>
           <div className="flex items-center justify-between">
             <button
-              className={`w-full px-4 py-2 font-bold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline transition duration-300 flex justify-center items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2 font-bold text-white bg-primary rounded hover:bg-primary/60 focus:outline-none focus:shadow-outline transition duration-300 flex justify-center items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               type="submit"
               disabled={loading}
             >

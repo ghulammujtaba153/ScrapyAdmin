@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../config/url';
-import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye } from 'react-icons/fa';
 import UserModal from '../components/UserModal';
 
 const UserManagement = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -53,6 +55,10 @@ const UserManagement = () => {
     const handleEdit = (user) => {
         setCurrentUser(user);
         setIsModalOpen(true);
+    };
+
+    const handleViewUser = (userId) => {
+        navigate(`/user-management/${userId}`);
     };
 
     const handleDelete = async (id) => {
@@ -149,6 +155,13 @@ const UserManagement = () => {
                                         <p className="text-gray-900 whitespace-no-wrap">{u.country || '-'}</p>
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                                        <button
+                                            onClick={() => handleViewUser(u._id)}
+                                            className="text-green-600 hover:text-green-900 mx-2"
+                                            title="View Details"
+                                        >
+                                            <FaEye />
+                                        </button>
                                         <button
                                             onClick={() => handleEdit(u)}
                                             className="text-blue-600 hover:text-blue-900 mx-2"
