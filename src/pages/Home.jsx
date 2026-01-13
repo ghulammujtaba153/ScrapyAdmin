@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaDollarSign, FaChartLine, FaBell, FaSearch, FaDatabase } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../config/url';
 import {
   LineChartComponent,
   PieChartComponent,
@@ -9,7 +9,6 @@ import {
   DonutChartComponent,
   ChartFilter
 } from '../components/charts';
-import { BASE_URL } from '../config/url';
 
 const Home = () => {
   const [timeFilter, setTimeFilter] = useState('monthly');
@@ -32,20 +31,20 @@ const Home = () => {
     subscriptions: []
   });
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${BASE_URL}/admin-dashboard?period=${timeFilter}`);
-      setStats(res.data.stats);
-      setChartData(res.data.chartData);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/admin-dashboard?period=${timeFilter}`);
+        setStats(res.data.stats);
+        setChartData(res.data.chartData);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, [timeFilter]);
 

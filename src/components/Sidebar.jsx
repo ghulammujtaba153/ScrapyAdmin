@@ -1,79 +1,76 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useUserAuth } from '../context/userAuth';
 import { NavLink } from 'react-router-dom';
-import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBars, FaTimes, FaBoxOpen, FaChartLine } from 'react-icons/fa';
+import { FaHome, FaUser, FaSignOutAlt, FaBoxOpen, FaChartLine, FaTimes } from 'react-icons/fa';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
     const { logout } = useUserAuth();
-    const [isOpen, setIsOpen] = useState(false);
-
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
 
     const navItems = [
         { path: '/', name: 'Dashboard', icon: <FaHome /> },
         { path: '/user-management', name: 'User Management', icon: <FaUser /> },
         { path: '/subscriptions', name: 'Subscriptions', icon: <FaChartLine /> },
         { path: '/packages', name: 'Packages', icon: <FaBoxOpen /> },
-        { path: "/profile", name: "Profile", icon: <FaUser />}
+        { path: "/profile", name: "Profile", icon: <FaUser /> }
     ];
 
     return (
-        <div className="flex h-screen md:flex-row flex-col z-50">
-            {/* Mobile Header & Toggle */}
-            <div className="md:hidden flex justify-between items-center bg-gray-900 text-white p-4 shadow-md z-50 relative">
-                <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-400">
-                        AdminPanel
-                    </span>
-                </div>
-                <button onClick={toggleSidebar} className="text-gray-300 hover:text-white focus:outline-none">
-                    {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-                </button>
-            </div>
-
+        <div className="flex h-screen md:flex-row flex-col z-50 transition-all duration-300 ease-in-out">
             {/* Sidebar */}
             <div className={`
-             fixed inset-y-0 left-0 bg-gray-900 text-white w-64 transition-transform transform duration-300 ease-in-out
+             fixed inset-y-0 left-0 bg-white text-gray-800 w-64 transition-all duration-300 ease-in-out border-r border-gray-200
              ${isOpen ? "translate-x-0" : "-translate-x-full"}
-             md:translate-x-0 md:static md:flex flex-col z-40 shadow-xl
+             md:translate-x-0 md:static ${isOpen ? "md:w-64" : "md:w-0"} md:flex flex-col z-40 shadow-sm overflow-hidden
           `}>
-                <div className="flex items-center justify-center h-20 border-b border-gray-800 bg-gray-900">
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-400">
+                <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 bg-white">
+                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500">
                         AdminPanel
                     </h1>
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none md:hidden"
+                        aria-label="Close Sidebar"
+                    >
+                        <FaTimes size={20} />
+                    </button>
+                    {/* Desktop hidden button to collapse if desired */}
+                    <button
+                        onClick={toggleSidebar}
+                        className="hidden md:block p-1 text-gray-300 hover:text-gray-500 focus:outline-none"
+                    >
+                        <FaTimes size={16} />
+                    </button>
                 </div>
 
                 <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
-                    <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Main Menu</p>
+                    <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Main Menu</p>
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             className={({ isActive }) =>
-                                `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
-                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                `flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                                    ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-100'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-blue-600'
                                 }`
                             }
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => {
+                                if (window.innerWidth < 1024) setIsOpen(false);
+                            }}
                         >
-                            <span className={`mr-3 text-lg group-hover:animate-pulse`}>{item.icon}</span>
-                            <span className="font-medium">{item.name}</span>
+                            <span className={`mr-3 text-lg ${item.path === window.location.pathname ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'}`}>{item.icon}</span>
+                            <span className="font-semibold">{item.name}</span>
                         </NavLink>
                     ))}
-
-                    {/* Placeholder for more sections if needed */}
                 </nav>
 
-                <div className="p-4 border-t border-gray-800 bg-gray-900">
+                <div className="p-4 border-t border-gray-100 bg-white">
                     <button
                         onClick={logout}
-                        className="flex items-center w-full px-4 py-3 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300 group"
+                        className="flex items-center w-full px-4 py-3 text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-300 group font-medium"
                     >
-                        <span className="mr-3 text-lg group-hover:rotate-180 transition-transform duration-300"><FaSignOutAlt /></span>
-                        <span className="font-medium">Logout</span>
+                        <span className="mr-3 text-lg group-hover:rotate-12 transition-transform duration-300"><FaSignOutAlt /></span>
+                        <span>Logout</span>
                     </button>
                 </div>
             </div>

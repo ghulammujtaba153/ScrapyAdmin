@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -13,11 +14,15 @@ import UserDetails from './pages/UserDetails';
 
 // Layout component for dashboard pages (Sidebar + Content)
 const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
           <Outlet />
         </main>
@@ -41,7 +46,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/packages" element={<Packages />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
-          
+
         </Route>
       </Route>
     </Routes>

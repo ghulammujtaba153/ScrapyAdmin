@@ -121,6 +121,9 @@ const UserManagement = () => {
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Country
                                 </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Created At
+                                </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Actions
                                 </th>
@@ -128,9 +131,9 @@ const UserManagement = () => {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" className="text-center py-4">Loading...</td></tr>
+                                <tr><td colSpan="6" className="text-center py-4">Loading...</td></tr>
                             ) : users.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center py-4">No users found.</td></tr>
+                                <tr><td colSpan="6" className="text-center py-4">No users found.</td></tr>
                             ) : users.map((u) => (
                                 <tr key={u._id}>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -154,28 +157,35 @@ const UserManagement = () => {
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <p className="text-gray-900 whitespace-no-wrap">{u.country || '-'}</p>
                                     </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
-                                        <button
-                                            onClick={() => handleViewUser(u._id)}
-                                            className="text-green-600 hover:text-green-900 mx-2"
-                                            title="View Details"
-                                        >
-                                            <FaEye />
-                                        </button>
-                                        <button
-                                            onClick={() => handleEdit(u)}
-                                            className="text-blue-600 hover:text-blue-900 mx-2"
-                                            title="Edit"
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(u._id)}
-                                            className="text-red-600 hover:text-red-900 mx-2"
-                                            title="Delete"
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <p className="text-gray-900 whitespace-no-wrap">
+                                            {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
+                                        </p>
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <div className="flex items-center justify-center whitespace-nowrap">
+                                            <button
+                                                onClick={() => handleViewUser(u._id)}
+                                                className="text-green-600 hover:text-green-900 mx-2"
+                                                title="View Details"
+                                            >
+                                                <FaEye />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEdit(u)}
+                                                className="text-blue-600 hover:text-blue-900 mx-2"
+                                                title="Edit"
+                                            >
+                                                <FaEdit />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(u._id)}
+                                                className="text-red-600 hover:text-red-900 mx-2"
+                                                title="Delete"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

@@ -1,8 +1,7 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaSpinner } from 'react-icons/fa';
-import { BASE_URL } from '../config/url';
+import api from '../config/url';
 import {
     UserInfoCard,
     UserStatsCards,
@@ -18,21 +17,21 @@ const UserDetails = () => {
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
 
-    const fetchUserDetails = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await axios.get(`${BASE_URL}/admin-dashboard/user/${id}`);
-            setUserData(res.data);
-        } catch (error) {
-            console.error("Error fetching user details:", error);
-            setError(error.response?.data?.message || "Failed to fetch user details");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchUserDetails = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const res = await api.get(`/admin-dashboard/user/${id}`);
+                setUserData(res.data);
+            } catch (error) {
+                console.error("Error fetching user details:", error);
+                setError(error.response?.data?.message || "Failed to fetch user details");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (id) {
             fetchUserDetails();
         }
@@ -108,9 +107,9 @@ const UserDetails = () => {
 
                 {/* Subscription & Searches - Takes 2 columns */}
                 <div className="lg:col-span-2 space-y-6">
-                    <SubscriptionHistory 
-                        subscriptions={subscriptionHistory} 
-                        activeSubscription={activeSubscription} 
+                    <SubscriptionHistory
+                        subscriptions={subscriptionHistory}
+                        activeSubscription={activeSubscription}
                     />
                 </div>
             </div>
