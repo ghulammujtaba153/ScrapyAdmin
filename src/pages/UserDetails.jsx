@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaSpinner } from 'react-icons/fa';
+import { FaArrowLeft, FaSpinner, FaClock } from 'react-icons/fa';
 import api from '../config/url';
 import {
     UserInfoCard,
@@ -75,7 +75,16 @@ const UserDetails = () => {
         );
     }
 
-    const { user, stats, activeSubscription, subscriptionHistory, recentSearches, chartData } = userData;
+    const { user, stats, activeSubscription: realActiveSubscription, subscriptionHistory, recentSearches, chartData } = userData;
+
+    // Use existing active subscription or derive one from user plan data for manual registrations
+    const activeSubscription = realActiveSubscription || (user.planName ? {
+        package: { name: user.planName, features: [] },
+        amount: user.planAmount,
+        startDate: user.createdAt,
+        endDate: user.planExpiry,
+        status: user.status === 'active' ? 'Active' : 'Pending'
+    } : null);
 
     return (
         <div className="container mx-auto px-4 py-6">
@@ -103,55 +112,38 @@ const UserDetails = () => {
                 {/* User Info Card - Takes 1 column */}
                 <div className="lg:col-span-1 space-y-6">
                     <UserInfoCard user={user} />
-                    
-                    {/* Plan Details Card */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                            <h3 className="font-bold text-gray-800">Subscription Status</h3>
-                            {user.status === 'under_review' && (
-                                <span className="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Review Required</span>
-                            )}
-                        </div>
-                        <div className="p-5">
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">Selected Plan:</span>
-                                    <span className="font-bold text-gray-800">{user.planName || 'N/A'}</span>
+
+                    {(user.status?.replace('_', ' ').toLowerCase() === 'under review' || user.status?.toLowerCase() === 'under_review') ? (
+                        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
+                                    <FaClock className="animate-pulse" />
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">Amount Paid:</span>
-                                    <span className="font-bold text-primary">{user.planAmount || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">Expiry:</span>
-                                    <span className="font-bold text-gray-800">
-                                        {user.planExpiry ? new Date(user.planExpiry).toLocaleDateString() : 'Lifetime'}
-                                    </span>
+                                <div>
+                                    <h3 className="font-black text-gray-900 text-sm">Action Required</h3>
+                                    <p className="text-[10px] text-gray-600 font-medium">Verify payment proof to activate access</p>
                                 </div>
                             </div>
-
-                            {user.status?.replace('_', ' ').toLowerCase() === 'under review' || user.status?.toLowerCase() === 'under_review' ? (
-                                <button 
-                                    onClick={async () => {
-                                        if (window.confirm("Are you sure you want to activate this user's subscription? An email will be sent to them.")) {
-                                            try {
-                                                const res = await api.post(`/auth/activate-subscription/${user._id}`);
-                                                if (res.data.success) {
-                                                    alert("Subscription activated and email sent!");
-                                                    window.location.reload(); // Refresh to show active status
-                                                }
-                                            } catch (err) {
-                                                alert("Failed to activate subscription: " + (err.response?.data?.message || err.message));
+                            <button 
+                                onClick={async () => {
+                                    if (window.confirm("Activate this user? A confirmation email will be sent automatically.")) {
+                                        try {
+                                            const res = await api.post(`/auth/activate-subscription/${user._id}`);
+                                            if (res.data.success) {
+                                                alert("Subscription activated successfully!");
+                                                window.location.reload(); 
                                             }
+                                        } catch (err) {
+                                            alert("Failed to activate: " + (err.response?.data?.message || err.message));
                                         }
-                                    }}
-                                    className="w-full mt-6 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-none hover:translate-y-0.5 transition-all"
-                                >
-                                    Verify & Activate
-                                </button>
-                            ) : null}
+                                    }
+                                }}
+                                className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:shadow-none hover:translate-y-0.5 transition-all"
+                            >
+                                Verify & Activate
+                            </button>
                         </div>
-                    </div>
+                    ) : null}
                     
                     {/* Payment Screenshot Card */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

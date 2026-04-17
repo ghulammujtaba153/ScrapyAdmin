@@ -53,7 +53,10 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
                             <h3 className="text-lg font-semibold mb-1">Current Active Plan</h3>
                             <p className="text-3xl font-bold">{activeSubscription.package?.name || 'N/A'}</p>
                             <p className="text-blue-100 mt-2">
-                                ${activeSubscription.amount?.toLocaleString()} / {activeSubscription.package?.interval || 'N/A'}
+                                {typeof activeSubscription.amount === 'string' && activeSubscription.amount.startsWith('$') 
+                                    ? activeSubscription.amount 
+                                    : `$${activeSubscription.amount?.toLocaleString() || 0}`}
+                                {activeSubscription.package?.interval ? ` / ${activeSubscription.package.interval}` : ''}
                             </p>
                         </div>
                         <div className="text-right">
@@ -127,7 +130,9 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                                            ${sub.amount?.toLocaleString() || 0}
+                                            {typeof sub.amount === 'string' && sub.amount.startsWith('$') 
+                                                ? sub.amount 
+                                                : `$${sub.amount?.toLocaleString() || 0}`}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(sub.status)}`}>
