@@ -101,8 +101,37 @@ const UserDetails = () => {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* User Info Card - Takes 1 column */}
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 space-y-6">
                     <UserInfoCard user={user} />
+                    
+                    {/* Payment Screenshot Card */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                            <h3 className="font-bold text-gray-800">Payment Screenshot</h3>
+                        </div>
+                        <div className="p-5 flex flex-col items-center">
+                            {user.paymentScreenshot ? (
+                                <>
+                                    <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                        <img 
+                                            src={`${import.meta.env.VITE_BASE_URL}/screenshots/${user.paymentScreenshot}`} 
+                                            alt="Payment Verification" 
+                                            className="w-full h-full object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                                            onClick={() => window.open(`${import.meta.env.VITE_BASE_URL}/screenshots/${user.paymentScreenshot}`, '_blank')}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-3 text-center">Click image to view full size</p>
+                                </>
+                            ) : (
+                                <div className="py-12 flex flex-col items-center justify-center text-gray-400">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <FaSpinner className="text-2xl opacity-20" />
+                                    </div>
+                                    <p className="text-sm">No screenshot uploaded</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Subscription & Searches - Takes 2 columns */}

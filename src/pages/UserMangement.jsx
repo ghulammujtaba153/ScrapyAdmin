@@ -14,6 +14,7 @@ const UserManagement = () => {
     const [search, setSearch] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const [statusFilter, setStatusFilter] = useState('');
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -22,7 +23,8 @@ const UserManagement = () => {
                 params: {
                     page,
                     limit: 10,
-                    search
+                    search,
+                    status: statusFilter
                 }
             });
             setUsers(res.data.users);
@@ -40,7 +42,7 @@ const UserManagement = () => {
         }, 500);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [page, search]);
+    }, [page, search, statusFilter]);
 
     const handleSearchChange = (e) => {
         setSearch(e.target.value);
@@ -77,6 +79,16 @@ const UserManagement = () => {
         fetchUsers(); // Refresh list after save/update
     };
 
+    const handleStatusChange = async (userId, newStatus) => {
+        try {
+            await axios.put(`${BASE_URL}/auth/update/${userId}`, { status: newStatus });
+            setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
+        } catch (error) {
+            console.error("Error updating status", error);
+            alert("Failed to update status");
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -95,6 +107,21 @@ const UserManagement = () => {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                         />
                     </div>
+                    
+                    <select
+                        value={statusFilter}
+                        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                        }}
+                    >
+                        <option value="">All Status</option>
+                        <option value="under_review">Under Review</option>
+                        <option value="active">Active</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
+
                     <button
                         onClick={handleInvite}
                         className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 whitespace-nowrap"
@@ -117,6 +144,9 @@ const UserManagement = () => {
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Role
+                                </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Country
@@ -153,6 +183,22 @@ const UserManagement = () => {
                                             <span aria-hidden className={`absolute inset-0 ${u.role === 'admin' ? 'bg-green-200' : 'bg-gray-200'} opacity-50 rounded-full`}></span>
                                             <span className="relative">{u.role}</span>
                                         </span>
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <select
+                                            value={u.status || 'under_review'}
+                                            onChange={(e) => handleStatusChange(u._id, e.target.value)}
+                                            className={`relative inline-block px-2 py-1 font-semibold leading-tight rounded-full border border-gray-200 focus:ring-2 focus:ring-blue-500 cursor-pointer text-xs
+                                                ${(u.status === 'active') ? 'bg-green-100 text-green-800' : 
+                                                  (u.status === 'blocked') ? 'bg-red-100 text-red-800' : 
+                                                  (u.status === 'under_review') ? 'bg-yellow-100 text-yellow-800' : 
+                                                  'bg-gray-100 text-gray-800'}`}
+                                        >
+                                            <option value="under_review">Under Review</option>
+                                            <option value="active">Active</option>
+                                            <option value="blocked">Blocked</option>
+                                            <option value="invited">Invited</option>
+                                        </select>
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <p className="text-gray-900 whitespace-no-wrap">{u.country || '-'}</p>
