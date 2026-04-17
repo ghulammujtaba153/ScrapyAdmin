@@ -104,6 +104,55 @@ const UserDetails = () => {
                 <div className="lg:col-span-1 space-y-6">
                     <UserInfoCard user={user} />
                     
+                    {/* Plan Details Card */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                            <h3 className="font-bold text-gray-800">Subscription Status</h3>
+                            {user.status === 'under_review' && (
+                                <span className="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Review Required</span>
+                            )}
+                        </div>
+                        <div className="p-5">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500">Selected Plan:</span>
+                                    <span className="font-bold text-gray-800">{user.planName || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500">Amount Paid:</span>
+                                    <span className="font-bold text-primary">{user.planAmount || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500">Expiry:</span>
+                                    <span className="font-bold text-gray-800">
+                                        {user.planExpiry ? new Date(user.planExpiry).toLocaleDateString() : 'Lifetime'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {user.status === 'under_review' && (
+                                <button 
+                                    onClick={async () => {
+                                        if (window.confirm("Are you sure you want to activate this user's subscription? An email will be sent to them.")) {
+                                            try {
+                                                const res = await api.post(`/auth/activate-subscription/${user._id}`);
+                                                if (res.data.success) {
+                                                    alert("Subscription activated and email sent!");
+                                                    window.location.reload(); // Refresh to show active status
+                                                }
+                                            } catch (err) {
+                                                alert("Failed to activate subscription: " + (err.response?.data?.message || err.message));
+                                            }
+                                        }
+                                    }}
+                                    className="w-full mt-6 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-none hover:translate-y-0.5 transition-all"
+                                >
+                                    Verify & Activate
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
                     {/* Payment Screenshot Card */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
@@ -112,20 +161,33 @@ const UserDetails = () => {
                         <div className="p-5 flex flex-col items-center">
                             {user.paymentScreenshot ? (
                                 <>
-                                    <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                    <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
                                         <img 
-                                            src={`${import.meta.env.VITE_BASE_URL}/screenshots/${user.paymentScreenshot}`} 
+                                            src={user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`} 
                                             alt="Payment Verification" 
-                                            className="w-full h-full object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
-                                            onClick={() => window.open(`${import.meta.env.VITE_BASE_URL}/screenshots/${user.paymentScreenshot}`, '_blank')}
+                                            className="w-full h-full object-contain cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-500"
+                                            onClick={() => window.open(user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`, '_blank')}
                                         />
+                                        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-center">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const fullPath = user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`;
+                                                    window.open(fullPath, '_blank');
+                                                }}
+                                                className="bg-white text-gray-900 px-4 py-2 rounded-lg text-xs font-bold shadow-xl"
+                                            >
+                                                Open in New Tab
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-3 text-center">Click image to view full size</p>
+                                    <p className="text-xs text-gray-400 mt-3 text-center">Reference ID: {user.paymentScreenshot.split('-')[1] || 'N/A'}</p>
                                 </>
                             ) : (
                                 <div className="py-12 flex flex-col items-center justify-center text-gray-400">
                                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <FaSpinner className="text-2xl opacity-20" />
+                                        {/* Use a static icon instead of spinner if no image */}
+                                        <FaGlobe className="text-2xl opacity-20" />
                                     </div>
                                     <p className="text-sm">No screenshot uploaded</p>
                                 </div>

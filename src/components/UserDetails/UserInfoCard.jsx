@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaGlobe, FaVenusMars, FaBriefcase } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaGlobe, FaVenusMars, FaBriefcase, FaWallet, FaRocket } from 'react-icons/fa';
 
 const UserInfoCard = ({ user }) => {
     if (!user) return null;
@@ -67,6 +67,8 @@ const UserInfoCard = ({ user }) => {
                     <InfoItem icon={<FaVenusMars />} label="Gender" value={user.gender || 'N/A'} />
                     <InfoItem icon={<FaCalendarAlt />} label="Date of Birth" value={formatDate(user.dob)} />
                     <InfoItem icon={<FaBriefcase />} label="Area of Interest" value={user.areaOfInterest || 'N/A'} />
+                    <InfoItem icon={<FaWallet />} label="Paid Amount" value={user.planAmount || 'N/A'} />
+                    <InfoItem icon={<FaRocket />} label="Active Plan" value={user.planName || 'N/A'} />
                     <InfoItem icon={<FaCalendarAlt />} label="Member Since" value={formatDate(user.createdAt)} />
                 </div>
             </div>
