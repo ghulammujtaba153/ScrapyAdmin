@@ -130,7 +130,7 @@ const UserDetails = () => {
                                 </div>
                             </div>
 
-                            {user.status === 'under_review' && (
+                            {user.status?.replace('_', ' ').toLowerCase() === 'under review' || user.status?.toLowerCase() === 'under_review' ? (
                                 <button 
                                     onClick={async () => {
                                         if (window.confirm("Are you sure you want to activate this user's subscription? An email will be sent to them.")) {
@@ -149,7 +149,7 @@ const UserDetails = () => {
                                 >
                                     Verify & Activate
                                 </button>
-                            )}
+                            ) : null}
                         </div>
                     </div>
                     
@@ -162,18 +162,36 @@ const UserDetails = () => {
                             {user.paymentScreenshot ? (
                                 <>
                                     <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
-                                        <img 
-                                            src={user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`} 
-                                            alt="Payment Verification" 
-                                            className="w-full h-full object-contain cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-500"
-                                            onClick={() => window.open(user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`, '_blank')}
-                                        />
+                                        {(() => {
+                                            const baseUrl = import.meta.env.VITE_BASE_URL?.replace(/\/+$/, "");
+                                            const sPath = user.paymentScreenshot;
+                                            const fullUrl = sPath.startsWith('http') 
+                                                ? sPath 
+                                                : `${baseUrl}${sPath.startsWith('/') ? '' : '/screenshots/'}${sPath}`;
+                                            
+                                            return (
+                                                <img 
+                                                    src={fullUrl} 
+                                                    alt="Payment Verification" 
+                                                    crossOrigin="anonymous"
+                                                    referrerPolicy="no-referrer"
+                                                    className="w-full h-full object-contain cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-500"
+                                                    onClick={() => window.open(fullUrl, '_blank')}
+                                                    onError={(e) => {
+                                                        console.error("Image failed to load:", fullUrl);
+                                                        // Fallback text or icon could go here if needed
+                                                    }}
+                                                />
+                                            );
+                                        })()}
                                         <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-center">
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const fullPath = user.paymentScreenshot.startsWith('http') ? user.paymentScreenshot : `${import.meta.env.VITE_BASE_URL}${user.paymentScreenshot.startsWith('/') ? '' : '/screenshots/'}${user.paymentScreenshot}`;
-                                                    window.open(fullPath, '_blank');
+                                                    const baseUrl = import.meta.env.VITE_BASE_URL?.replace(/\/+$/, "");
+                                                    const sPath = user.paymentScreenshot;
+                                                    const fullUrl = sPath.startsWith('http') ? sPath : `${baseUrl}${sPath.startsWith('/') ? '' : '/screenshots/'}${sPath}`;
+                                                    window.open(fullUrl, '_blank');
                                                 }}
                                                 className="bg-white text-gray-900 px-4 py-2 rounded-lg text-xs font-bold shadow-xl"
                                             >
