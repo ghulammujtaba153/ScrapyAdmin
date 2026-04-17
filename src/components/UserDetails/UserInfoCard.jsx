@@ -56,20 +56,44 @@ const UserInfoCard = ({ user }) => {
                 </div>
             </div>
 
+            {/* Subscription Highlights */}
+            <div className="px-6 py-4 bg-blue-50 border-y border-blue-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                        <FaRocket />
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Current Plan</p>
+                        <h4 className="font-black text-gray-900">{user.planName || 'No Active Plan'}</h4>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Expiry Date</p>
+                    <h4 className="font-black text-gray-900">
+                        {user.planExpiry ? formatDate(user.planExpiry) : (user.planName ? 'Lifetime' : 'N/A')}
+                    </h4>
+                </div>
+            </div>
+
             {/* Info Grid */}
-            <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <InfoItem icon={<FaPhone />} label="Phone" value={user.phone || 'N/A'} />
-                    <InfoItem icon={<FaGlobe />} label="Country" value={user.country || 'N/A'} />
-                    <InfoItem icon={<FaMapMarkerAlt />} label="City" value={user.city || 'N/A'} />
-                    <InfoItem icon={<FaMapMarkerAlt />} label="Address" value={user.address || 'N/A'} />
-                    <InfoItem icon={<FaVenusMars />} label="Gender" value={user.gender || 'N/A'} />
-                    <InfoItem icon={<FaCalendarAlt />} label="Date of Birth" value={formatDate(user.dob)} />
-                    <InfoItem icon={<FaBriefcase />} label="Area of Interest" value={user.areaOfInterest || 'N/A'} />
-                    <InfoItem icon={<FaWallet />} label="Paid Amount" value={user.planAmount || 'N/A'} />
-                    <InfoItem icon={<FaRocket />} label="Active Plan" value={user.planName || 'N/A'} />
-                    <InfoItem icon={<FaCalendarAlt />} label="Member Since" value={formatDate(user.createdAt)} />
+            <div className="p-6 space-y-6">
+                <div>
+                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Subscription Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem icon={<FaRocket />} label="Plan Name" value={user.planName || 'N/A'} />
+                        <InfoItem icon={<FaWallet />} label="Amount Paid" value={user.planAmount || 'N/A'} />
+                        <InfoItem icon={<FaCalendarAlt />} label="Expiry Date" value={user.planExpiry ? formatDate(user.planExpiry) : (user.planName ? 'Lifetime' : 'N/A')} />
+                        <InfoItem icon={<FaCalendarAlt />} label="Member Since" value={formatDate(user.createdAt)} />
+                    </div>
+                </div>
+
+                <div className="pt-6 border-t border-gray-100">
+                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Personal Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem icon={<FaEnvelope />} label="Email Address" value={user.email} />
+                        <InfoItem icon={<FaGlobe />} label="Country" value={user.country || 'N/A'} />
+                        <InfoItem icon={<FaBriefcase />} label="About User" value={user.aboutUser || 'N/A'} />
+                    </div>
                 </div>
             </div>
         </div>
