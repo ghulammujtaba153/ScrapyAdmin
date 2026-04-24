@@ -1,32 +1,57 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useUserAuth } from "../context/userAuth";
-import { BASE_URL } from "../config/url";
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSave } from "react-icons/fa";
+import api, { BASE_URL } from "../config/url";
+import { 
+    FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSave, 
+    FaGlobe, FaInfoCircle, FaChartBar, FaDatabase, FaSearch,
+    FaCalendarCheck, FaGem
+} from "react-icons/fa";
 
 const Profile = () => {
     const { user, login } = useUserAuth();
     const [loading, setLoading] = useState(false);
+    const [statsLoading, setStatsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [userStats, setUserStats] = useState(null);
     
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        country: '',
+        aboutUser: '',
         password: '',
         confirmPassword: ''
     });
 
-    useEffect(() => {
-        if (user) {
+    // Fetch full user profile and stats
+    const fetchUserDetails = async () => {
+        if (!user?._id) return;
+        try {
+            setStatsLoading(true);
+            const res = await api.get(`/admin-dashboard/user/${user._id}`);
+            const data = res.data;
+            
+            setUserStats(data.stats);
             setFormData(prev => ({
                 ...prev,
-                name: user.name || '',
-                email: user.email || ''
+                name: data.user.name || '',
+                email: data.user.email || '',
+                country: data.user.country || '',
+                aboutUser: data.user.aboutUser || ''
             }));
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+        } finally {
+            setStatsLoading(false);
         }
-    }, [user]);
+    };
+
+    useEffect(() => {
+        fetchUserDetails();
+    }, [user?._id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,13 +62,11 @@ const Profile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validate passwords match if changing password
         if (formData.password && formData.password !== formData.confirmPassword) {
             setMessage({ type: 'error', text: 'Passwords do not match' });
             return;
         }
 
-        // Validate password length if provided
         if (formData.password && formData.password.length < 6) {
             setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
             return;
@@ -53,23 +76,29 @@ const Profile = () => {
         try {
             const updateData = {
                 name: formData.name,
-                email: formData.email
+                email: formData.email,
+                country: formData.country,
+                aboutUser: formData.aboutUser
             };
 
-            // Only include password if it's being changed
             if (formData.password) {
                 updateData.password = formData.password;
             }
 
-            const res = await axios.put(`${BASE_URL}/auth/update/${user._id}`, updateData);
+            const res = await api.put(`/auth/update/${user._id}`, updateData);
             
             if (res.status === 200) {
-                // Update local storage with new user data
-                const updatedUser = { ...user, name: formData.name, email: formData.email };
+                // Update context/local storage with new user data
+                const updatedUser = { 
+                    ...user, 
+                    name: formData.name, 
+                    email: formData.email,
+                    country: formData.country,
+                    aboutUser: formData.aboutUser
+                };
                 localStorage.setItem("user", JSON.stringify(updatedUser));
                 
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
-                // Clear password fields
                 setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
             }
         } catch (error) {
@@ -84,168 +113,255 @@ const Profile = () => {
     };
 
     return (
-        <div className="p-6">
-            <div className="max-w-2xl mx-auto">
+        <div className="p-4 md:p-8 bg-gray-50/50 min-h-screen">
+            <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Profile Settings</h1>
-                    <p className="text-gray-600 mt-2">Manage your account information</p>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Account Settings</h1>
+                    <p className="text-gray-500 mt-1">Manage your profile information and view your scraping activity.</p>
                 </div>
 
-                {/* Profile Card */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    {/* Profile Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-600 text-3xl font-bold shadow-lg">
-                                {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Profile Card & Stats */}
+                    <div className="lg:col-span-1 space-y-8">
+                        {/* Summary Card */}
+                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="h-32 bg-gradient-to-r from-primary to-blue-600"></div>
+                            <div className="px-6 pb-6">
+                                <div className="relative -mt-16 mb-4">
+                                    <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center text-primary text-4xl font-black shadow-xl border-4 border-white">
+                                        {formData.name?.charAt(0)?.toUpperCase() || 'A'}
+                                    </div>
+                                    <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900">{formData.name || 'Admin'}</h2>
+                                <p className="text-gray-500 text-sm mb-4">{formData.email}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
+                                        {user?.role || 'User'}
+                                    </span>
+                                    <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider ${user?.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                        {user?.status || 'Pending'}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="text-white">
-                                <h2 className="text-2xl font-bold">{user?.name || 'Admin'}</h2>
-                                <p className="text-blue-100">{user?.email}</p>
-                                <span className="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-sm">
-                                    {user?.role || 'Admin'}
-                                </span>
+                        </div>
+
+                        {/* Scraping Stats Card */}
+                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <FaChartBar className="text-primary" />
+                                Usage Statistics
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                        <FaSearch />
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Total Searches</p>
+                                        <p className="text-xl font-black text-gray-900">
+                                            {statsLoading ? '...' : userStats?.totalSearches?.toLocaleString() || 0}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                        <FaDatabase />
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Data Scraped</p>
+                                        <p className="text-xl font-black text-gray-900">
+                                            {statsLoading ? '...' : userStats?.totalRecords?.toLocaleString() || 0}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t border-gray-50">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-500">Current Plan</span>
+                                        <span className="font-bold text-gray-900 flex items-center gap-1">
+                                            <FaGem className="text-amber-500 text-xs" />
+                                            {user?.planName || 'Free Plan'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                        {/* Message */}
-                        {message.text && (
-                            <div className={`p-4 rounded-lg ${
-                                message.type === 'success' 
-                                    ? 'bg-green-50 text-green-700 border border-green-200' 
-                                    : 'bg-red-50 text-red-700 border border-red-200'
-                            }`}>
-                                {message.text}
-                            </div>
-                        )}
-
-                        {/* Name Field */}
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Full Name
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <FaUser className="text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                    placeholder="Enter your name"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Email Field */}
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <FaEnvelope className="text-gray-400" />
-                                </div>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                    placeholder="Enter your email"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t border-gray-200 pt-6">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h3>
-                            <p className="text-sm text-gray-500 mb-4">Leave blank to keep current password</p>
-                        </div>
-
-                        {/* New Password Field */}
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                New Password
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <FaLock className="text-gray-400" />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="w-full pl-12 pr-12 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                    placeholder="Enter new password"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
-                                >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Confirm Password Field */}
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Confirm New Password
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <FaLock className="text-gray-400" />
-                                </div>
-                                <input
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    className="w-full pl-12 pr-12 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                    placeholder="Confirm new password"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
-                                >
-                                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {loading ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaSave />
-                                        Save Changes
-                                    </>
+                    {/* Right Column: Edit Form */}
+                    <div className="lg:col-span-2">
+                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                {/* Feedback Message */}
+                                {message.text && (
+                                    <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+                                        message.type === 'success' 
+                                            ? 'bg-green-50 text-green-700 border border-green-100' 
+                                            : 'bg-red-50 text-red-700 border border-red-100'
+                                    }`}>
+                                        <FaInfoCircle />
+                                        <span className="font-medium">{message.text}</span>
+                                    </div>
                                 )}
-                            </button>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Name Field */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                <FaUser />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium"
+                                                placeholder="John Doe"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Email Field */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                <FaEnvelope />
+                                            </div>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium"
+                                                placeholder="john@example.com"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Country Field */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Country</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                <FaGlobe />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="country"
+                                                value={formData.country}
+                                                onChange={handleChange}
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium"
+                                                placeholder="United States"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* About Field */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Bio / About</label>
+                                        <div className="relative group">
+                                            <div className="absolute top-4 left-4 pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                <FaInfoCircle />
+                                            </div>
+                                            <textarea
+                                                name="aboutUser"
+                                                value={formData.aboutUser}
+                                                onChange={handleChange}
+                                                rows="3"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium resize-none"
+                                                placeholder="Tell us a bit about yourself..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-gray-50">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <h3 className="text-lg font-bold text-gray-900">Security</h3>
+                                        <span className="text-xs text-gray-400 font-medium">(Leave blank to keep current)</span>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* New Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">New Password</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                    <FaLock />
+                                                </div>
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium"
+                                                    placeholder="••••••••"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                                >
+                                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Confirm Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Confirm Password</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                                    <FaLock />
+                                                </div>
+                                                <input
+                                                    type={showConfirmPassword ? "text" : "password"}
+                                                    name="confirmPassword"
+                                                    value={formData.confirmPassword}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none text-gray-800 font-medium"
+                                                    placeholder="••••••••"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                                >
+                                                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4">
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-primary hover:bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                                                Updating Profile...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaSave />
+                                                Save Changes
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

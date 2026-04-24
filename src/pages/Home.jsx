@@ -22,7 +22,8 @@ const Home = () => {
     subscriptionGrowthPercent: 0,
     totalSearches: 0,
     searchGrowthPercent: 0,
-    totalRecords: 0
+    totalRecords: 0,
+    recordGrowthPercent: 0
   });
   const [chartData, setChartData] = useState({
     userGrowth: [],
@@ -134,7 +135,9 @@ const Home = () => {
                 <div className="p-3 bg-cyan-400 bg-opacity-30 rounded-full">
                   <FaDatabase className="text-2xl" />
                 </div>
-                <span className="text-sm font-medium bg-cyan-700 bg-opacity-40 px-2 py-1 rounded">Total</span>
+                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.recordGrowthPercent >= 0 ? 'bg-cyan-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                  {stats.recordGrowthPercent >= 0 ? '+' : ''}{stats.recordGrowthPercent}%
+                </span>
               </div>
               <div>
                 <h3 className="text-cyan-100 text-sm font-medium mb-1">Records Scraped</h3>

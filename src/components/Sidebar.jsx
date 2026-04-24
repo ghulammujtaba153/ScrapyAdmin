@@ -10,7 +10,6 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
         { path: '/', name: 'Dashboard', icon: <FaHome /> },
         { path: '/user-management', name: 'User Management', icon: <FaUser /> },
         { path: '/subscriptions', name: 'Subscriptions', icon: <FaChartLine /> },
-        { path: '/packages', name: 'Packages', icon: <FaBoxOpen /> },
         { path: "/profile", name: "Profile", icon: <FaUser /> }
     ];
 
@@ -18,17 +17,17 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
         <div className="flex h-screen md:flex-row flex-col z-50 transition-all duration-300 ease-in-out">
             {/* Sidebar */}
             <div className={`
-             fixed inset-y-0 left-0 bg-white text-gray-800 w-64 transition-all duration-300 ease-in-out border-r border-gray-200
+             fixed inset-y-0 left-0 bg-gray-50 text-gray-800 w-64 transition-all duration-300 ease-in-out border-r border-gray-200
              ${isOpen ? "translate-x-0" : "-translate-x-full"}
              md:translate-x-0 md:static ${isOpen ? "md:w-64" : "md:w-0"} md:flex flex-col z-40 shadow-sm overflow-hidden
           `}>
-                <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 bg-white">
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500">
+                <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 bg-gray-50">
+                    <h1 className="text-2xl font-bold text-primary">
                         AdminPanel
                     </h1>
                     <button
                         onClick={toggleSidebar}
-                        className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none md:hidden"
+                        className="p-2 text-gray-400 hover:text-primary focus:outline-none md:hidden"
                         aria-label="Close Sidebar"
                     >
                         <FaTimes size={20} />
@@ -50,21 +49,21 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
                             to={item.path}
                             className={({ isActive }) =>
                                 `flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                                    ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-100'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-blue-600'
+                                    ? 'bg-primary/10 text-primary shadow-sm border border-primary/10'
+                                    : 'text-gray-500 hover:bg-gray-100 hover:text-primary'
                                 }`
                             }
                             onClick={() => {
                                 if (window.innerWidth < 1024) setIsOpen(false);
                             }}
                         >
-                            <span className={`mr-3 text-lg ${item.path === window.location.pathname ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'}`}>{item.icon}</span>
+                            <span className={`mr-3 text-lg ${item.path === window.location.pathname ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`}>{item.icon}</span>
                             <span className="font-semibold">{item.name}</span>
                         </NavLink>
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-gray-100 bg-white">
+                <div className="p-4 border-t border-gray-100 bg-gray-50">
                     <button
                         onClick={logout}
                         className="flex items-center w-full px-4 py-3 text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-300 group font-medium"
