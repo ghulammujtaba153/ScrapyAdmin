@@ -104,13 +104,13 @@ const UserManagement = () => {
                             placeholder="Search users..."
                             value={search}
                             onChange={handleSearchChange}
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                     </div>
                     
                     <select
                         value={statusFilter}
-                        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                         onChange={(e) => {
                             setStatusFilter(e.target.value);
                             setPage(1);
@@ -124,7 +124,7 @@ const UserManagement = () => {
 
                     <button
                         onClick={handleInvite}
-                        className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 whitespace-nowrap"
+                        className="flex items-center bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition duration-300 whitespace-nowrap shadow-sm"
                     >
                         <FaPlus className="mr-2" /> Invite User
                     </button>
@@ -188,7 +188,7 @@ const UserManagement = () => {
                                         <select
                                             value={u.status || 'under_review'}
                                             onChange={(e) => handleStatusChange(u._id, e.target.value)}
-                                            className={`relative inline-block px-2 py-1 font-semibold leading-tight rounded-full border border-gray-200 focus:ring-2 focus:ring-blue-500 cursor-pointer text-xs
+                                            className={`relative inline-block px-2 py-1 font-semibold leading-tight rounded-full border border-gray-200 focus:ring-2 focus:ring-primary cursor-pointer text-xs
                                                 ${(u.status === 'active') ? 'bg-green-100 text-green-800' : 
                                                   (u.status === 'blocked') ? 'bg-red-100 text-red-800' : 
                                                   (u.status === 'under_review') ? 'bg-yellow-100 text-yellow-800' : 
@@ -219,7 +219,7 @@ const UserManagement = () => {
                                             </button>
                                             <button
                                                 onClick={() => handleEdit(u)}
-                                                className="text-blue-600 hover:text-blue-900 mx-2"
+                                                className="text-primary hover:text-primary/70 mx-2"
                                                 title="Edit"
                                             >
                                                 <FaEdit />

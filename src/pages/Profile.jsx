@@ -1,21 +1,19 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useUserAuth } from "../context/userAuth";
-import api, { BASE_URL } from "../config/url";
+import api from "../config/url";
 import { 
     FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSave, 
-    FaGlobe, FaInfoCircle, FaChartBar, FaDatabase, FaSearch,
-    FaCalendarCheck, FaGem
+    FaGlobe, FaInfoCircle, FaGem, FaCalendarAlt, FaDollarSign, FaTag
 } from "react-icons/fa";
 
 const Profile = () => {
-    const { user, login } = useUserAuth();
+    const { user, updateUserData } = useUserAuth();
     const [loading, setLoading] = useState(false);
-    const [statsLoading, setStatsLoading] = useState(true);
+    const [profileLoading, setProfileLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [userStats, setUserStats] = useState(null);
+    const [profileData, setProfileData] = useState(null);
     
     const [formData, setFormData] = useState({
         name: '',
@@ -26,31 +24,31 @@ const Profile = () => {
         confirmPassword: ''
     });
 
-    // Fetch full user profile and stats
-    const fetchUserDetails = async () => {
+    // Fetch user profile (lightweight endpoint only)
+    const fetchUserProfile = async () => {
         if (!user?._id) return;
         try {
-            setStatsLoading(true);
-            const res = await api.get(`/admin-dashboard/user/${user._id}`);
-            const data = res.data;
-            
-            setUserStats(data.stats);
+            setProfileLoading(true);
+            const res = await api.get(`/auth/profile/${user._id}`);
+            const profile = res.data.user;
+            setProfileData(profile);
+
             setFormData(prev => ({
                 ...prev,
-                name: data.user.name || '',
-                email: data.user.email || '',
-                country: data.user.country || '',
-                aboutUser: data.user.aboutUser || ''
+                name: profile.name || '',
+                email: profile.email || '',
+                country: profile.country || '',
+                aboutUser: profile.aboutUser || ''
             }));
         } catch (error) {
-            console.error("Error fetching user details:", error);
+            console.error("Error fetching profile:", error);
         } finally {
-            setStatsLoading(false);
+            setProfileLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUserDetails();
+        fetchUserProfile();
     }, [user?._id]);
 
     const handleChange = (e) => {
@@ -88,15 +86,13 @@ const Profile = () => {
             const res = await api.put(`/auth/update/${user._id}`, updateData);
             
             if (res.status === 200) {
-                // Update context/local storage with new user data
-                const updatedUser = { 
-                    ...user, 
-                    name: formData.name, 
+                // Update auth context so sidebar/navbar reflect changes immediately
+                updateUserData({
+                    name: formData.name,
                     email: formData.email,
                     country: formData.country,
                     aboutUser: formData.aboutUser
-                };
-                localStorage.setItem("user", JSON.stringify(updatedUser));
+                });
                 
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
                 setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
@@ -112,21 +108,26 @@ const Profile = () => {
         }
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
     return (
         <div className="p-4 md:p-8 bg-gray-50/50 min-h-screen">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Account Settings</h1>
-                    <p className="text-gray-500 mt-1">Manage your profile information and view your scraping activity.</p>
+                    <p className="text-gray-500 mt-1">Manage your admin profile and security settings.</p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Profile Card & Stats */}
+                    {/* Left Column: Profile Card & Plan Info */}
                     <div className="lg:col-span-1 space-y-8">
                         {/* Summary Card */}
                         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="h-32 bg-gradient-to-r from-primary to-blue-600"></div>
+                            <div className="h-32 bg-gradient-to-r from-primary to-emerald-500"></div>
                             <div className="px-6 pb-6">
                                 <div className="relative -mt-16 mb-4">
                                     <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center text-primary text-4xl font-black shadow-xl border-4 border-white">
@@ -141,52 +142,17 @@ const Profile = () => {
                                         {user?.role || 'User'}
                                     </span>
                                     <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider ${user?.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                        {user?.status || 'Pending'}
+                                        {user?.status?.replace('_', ' ') || 'Pending'}
                                     </span>
+                                    {(profileData?.userType || user?.userType) && (
+                                        <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wider">
+                                            {(profileData?.userType || user?.userType) === 'INTL' ? 'International' : 'Local'}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Scraping Stats Card */}
-                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <FaChartBar className="text-primary" />
-                                Usage Statistics
-                            </h3>
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
-                                        <FaSearch />
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Total Searches</p>
-                                        <p className="text-xl font-black text-gray-900">
-                                            {statsLoading ? '...' : userStats?.totalSearches?.toLocaleString() || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
-                                        <FaDatabase />
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Data Scraped</p>
-                                        <p className="text-xl font-black text-gray-900">
-                                            {statsLoading ? '...' : userStats?.totalRecords?.toLocaleString() || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="pt-4 border-t border-gray-50">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-500">Current Plan</span>
-                                        <span className="font-bold text-gray-900 flex items-center gap-1">
-                                            <FaGem className="text-amber-500 text-xs" />
-                                            {user?.planName || 'Free Plan'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Right Column: Edit Form */}
@@ -195,7 +161,7 @@ const Profile = () => {
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 {/* Feedback Message */}
                                 {message.text && (
-                                    <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+                                    <div className={`p-4 rounded-2xl flex items-center gap-3 ${
                                         message.type === 'success' 
                                             ? 'bg-green-50 text-green-700 border border-green-100' 
                                             : 'bg-red-50 text-red-700 border border-red-100'
@@ -344,7 +310,7 @@ const Profile = () => {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full bg-primary hover:bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
+                                        className="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
                                     >
                                         {loading ? (
                                             <>

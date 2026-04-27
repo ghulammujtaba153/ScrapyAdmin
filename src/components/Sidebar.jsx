@@ -10,6 +10,7 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
         { path: '/', name: 'Dashboard', icon: <FaHome /> },
         { path: '/user-management', name: 'User Management', icon: <FaUser /> },
         { path: '/subscriptions', name: 'Subscriptions', icon: <FaChartLine /> },
+        { path: "/mail-notifications", name: "Mail Notifications", icon: <FaBoxOpen /> },
         { path: "/profile", name: "Profile", icon: <FaUser /> }
     ];
 
@@ -22,9 +23,11 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
              md:translate-x-0 md:static ${isOpen ? "md:w-64" : "md:w-0"} md:flex flex-col z-40 shadow-sm overflow-hidden
           `}>
                 <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 bg-gray-50">
-                    <h1 className="text-2xl font-bold text-primary">
-                        AdminPanel
-                    </h1>
+                    <img
+                        src="/logo.png"
+                        alt="Logo"
+                        className="w-32 h-22"
+                    />
                     <button
                         onClick={toggleSidebar}
                         className="p-2 text-gray-400 hover:text-primary focus:outline-none md:hidden"

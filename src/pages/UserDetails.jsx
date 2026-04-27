@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaSpinner, FaClock } from 'react-icons/fa';
+import { FaArrowLeft, FaSpinner, FaClock, FaGlobe } from 'react-icons/fa';
 import api from '../config/url';
 import {
     UserInfoCard,
     UserStatsCards,
     UserCharts,
     SubscriptionHistory,
-    RecentSearches
+    RecentSearches,
+    UserTeams
 } from '../components/UserDetails';
 
 const UserDetails = () => {
@@ -41,7 +42,7 @@ const UserDetails = () => {
         return (
             <div className="flex items-center justify-center h-96">
                 <div className="text-center">
-                    <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
+                    <FaSpinner className="animate-spin text-4xl text-primary mx-auto mb-4" />
                     <p className="text-gray-600">Loading user details...</p>
                 </div>
             </div>
@@ -58,7 +59,7 @@ const UserDetails = () => {
                     </div>
                     <button
                         onClick={() => navigate('/user-management')}
-                        className="text-blue-600 hover:text-blue-800 flex items-center justify-center mx-auto"
+                        className="text-primary hover:text-primary/80 flex items-center justify-center mx-auto"
                     >
                         <FaArrowLeft className="mr-2" /> Back to User Management
                     </button>
@@ -75,7 +76,7 @@ const UserDetails = () => {
         );
     }
 
-    const { user, stats, activeSubscription: realActiveSubscription, subscriptionHistory, recentSearches, chartData } = userData;
+    const { user, stats, activeSubscription: realActiveSubscription, subscriptionHistory, recentSearches, teams, leadStats, chartData } = userData;
 
     // Use existing active subscription or derive one from user plan data for manual registrations
     const activeSubscription = realActiveSubscription || (user.planName ? {
@@ -212,14 +213,28 @@ const UserDetails = () => {
                         subscriptions={subscriptionHistory}
                         activeSubscription={activeSubscription}
                     />
+                    
+                    
+
+                    {/* Teams Section */}
+                    <div className="mt-6">
+                        <UserTeams teams={teams} />
+                    </div>
+
+                    {/* Spending Chart Section (Keeps Right Column height balanced with Left Column) */}
+                    <div className="mt-6">
+                        <UserCharts chartData={chartData} leadStats={leadStats} type="spending" />
+                    </div>
                 </div>
             </div>
 
-            {/* Charts Section */}
-            <UserCharts chartData={chartData} />
-
-            {/* Recent Searches */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Other Charts Section (Full Width Below Grid) */}
+            <div className="mt-6">
+                <UserCharts chartData={chartData} leadStats={leadStats} type="other" />
+            </div>
+            
+            {/* Recent Searches (Full Width Below Grid) */}
+            <div className="mt-6 mb-6">
                 <RecentSearches searches={recentSearches} />
             </div>
         </div>

@@ -22,14 +22,22 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const UserCharts = ({ chartData }) => {
+const UserCharts = ({ chartData, leadStats, type = 'all' }) => {
     if (!chartData) return null;
 
     const { spending = [], searchActivity = [], subscriptionDistribution = [] } = chartData;
 
+    const leadDistribution = leadStats ? [
+        { name: 'Interested', value: leadStats.interested, color: '#10B981' },
+        { name: 'Not Interested', value: leadStats.notInterested, color: '#EF4444' },
+        { name: 'No Response', value: leadStats.noResponse, color: '#F59E0B' },
+        { name: 'Not Reached', value: leadStats.notReached, color: '#6B7280' }
+    ].filter(item => item.value > 0) : [];
+
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className={`grid grid-cols-1 ${(type === 'all' || type === 'other') ? 'lg:grid-cols-2' : ''} gap-6 mb-6`}>
             {/* Spending Chart */}
+            {(type === 'all' || type === 'spending') && (
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Monthly Spending</h3>
                 <div className="h-72 w-full">
@@ -68,8 +76,10 @@ const UserCharts = ({ chartData }) => {
                     </ResponsiveContainer>
                 </div>
             </div>
+            )}
 
             {/* Search Activity Chart */}
+            {(type === 'all' || type === 'other') && (
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Search Activity</h3>
                 <div className="h-72 w-full">
@@ -95,16 +105,25 @@ const UserCharts = ({ chartData }) => {
                     </ResponsiveContainer>
                 </div>
             </div>
+            )}
 
-            {/* Subscription Distribution */}
-            {subscriptionDistribution.length > 0 && (
+            
+            
+
+            {/* Lead Status Distribution */}
+            {(type === 'all' || type === 'other') && leadDistribution.length > 0 && (
                 <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Subscription Status Distribution</h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-bold text-gray-800">Lead Contact Status</h3>
+                        <div className="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full border border-green-200">
+                            WhatsApp Verified: {leadStats.whatsappVerified}
+                        </div>
+                    </div>
                     <div className="h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={subscriptionDistribution}
+                                    data={leadDistribution}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -113,8 +132,8 @@ const UserCharts = ({ chartData }) => {
                                     dataKey="value"
                                     label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                                 >
-                                    {subscriptionDistribution.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
+                                    {leadDistribution.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
                                 <Tooltip />

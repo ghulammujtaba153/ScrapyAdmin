@@ -76,8 +76,15 @@ export const UserAuthContextProvider = ({ children }) => {
         localStorage.removeItem("token");
     };
 
+    // Update user data in context and localStorage (for profile edits)
+    const updateUserData = (updatedFields) => {
+        const updatedUser = { ...user, ...updatedFields };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+    };
+
     return (
-        <UserAuthContext.Provider value={{ user, login, logout, loading }}>
+        <UserAuthContext.Provider value={{ user, login, logout, loading, updateUserData }}>
             {children}
         </UserAuthContext.Provider>
     );

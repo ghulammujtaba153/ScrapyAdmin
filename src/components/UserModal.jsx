@@ -8,7 +8,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         email: '',
         role: 'user',
         country: '',
-        phone: ''
+        aboutUser: '',
+        userType: 'local'
     });
     const [loading, setLoading] = useState(false);
 
@@ -19,7 +20,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                 email: user.email || '',
                 role: user.role || 'user',
                 country: user.country || '',
-                phone: user.phone || ''
+                aboutUser: user.aboutUser || '',
+                userType: user.userType || 'local'
             });
         } else {
             setFormData({
@@ -27,7 +29,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                 email: '',
                 role: 'user',
                 country: '',
-                phone: ''
+                aboutUser: '',
+                userType: 'local'
             });
         }
     }, [user, isOpen]);
@@ -92,7 +95,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none"
                                     placeholder="John Doe"
                                     required
                                 />
@@ -104,7 +107,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none"
                                     placeholder="john@example.com"
                                     required
                                 />
@@ -115,7 +118,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                     name="role"
                                     value={formData.role}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none bg-white"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none bg-white"
                                 >
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
@@ -128,20 +131,32 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                         name="country"
                                         value={formData.country}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none"
                                         placeholder="USA"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Phone</label>
-                                    <input
-                                        name="phone"
-                                        value={formData.phone}
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">User Type</label>
+                                    <select
+                                        name="userType"
+                                        value={formData.userType}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                        placeholder="+1 234 567 890"
-                                    />
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none bg-white"
+                                    >
+                                        <option value="local">Local</option>
+                                        <option value="INTL">International (INTL)</option>
+                                    </select>
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 text-sm font-bold mb-2">About User</label>
+                                <textarea
+                                    name="aboutUser"
+                                    value={formData.aboutUser}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all outline-none resize-none h-24"
+                                    placeholder="Notes or info about the user..."
+                                ></textarea>
                             </div>
 
                             <div className="flex items-center justify-end pt-6 mt-6 border-t border-solid border-gray-100">
@@ -153,7 +168,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="bg-blue-600 text-white active:bg-blue-700 font-bold uppercase text-sm px-8 py-3 rounded-lg shadow hover:shadow-lg outline-none focus:outline-none transition-all transform hover:-translate-y-0.5"
+                                    className="bg-primary text-white active:bg-primary/90 font-bold uppercase text-sm px-8 py-3 rounded-lg shadow hover:shadow-lg outline-none focus:outline-none transition-all transform hover:-translate-y-0.5"
                                     type="submit"
                                     disabled={loading}
                                 >

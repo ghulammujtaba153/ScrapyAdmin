@@ -59,103 +59,103 @@ const Home = () => {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : (
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
             {/* Card 1: Total Users */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-blue-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaUsers className="text-2xl" />
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.userGrowthPercent >= 0 ? 'bg-blue-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${stats.userGrowthPercent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {stats.userGrowthPercent >= 0 ? '+' : ''}{stats.userGrowthPercent}%
                 </span>
               </div>
               <div>
-                <h3 className="text-blue-100 text-sm font-medium mb-1">Total Users</h3>
-                <p className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Total Users</h3>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalUsers.toLocaleString()}</p>
               </div>
             </div>
 
             {/* Card 2: Revenue */}
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-green-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaDollarSign className="text-2xl" />
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.revenueGrowthPercent >= 0 ? 'bg-green-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${stats.revenueGrowthPercent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {stats.revenueGrowthPercent >= 0 ? '+' : ''}{stats.revenueGrowthPercent}%
                 </span>
               </div>
               <div>
-                <h3 className="text-green-100 text-sm font-medium mb-1">Revenue</h3>
-                <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Revenue</h3>
+                <p className="text-3xl font-bold text-gray-800">${stats.totalRevenue.toLocaleString()}</p>
               </div>
             </div>
 
             {/* Card 3: Subscriptions */}
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-orange-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaBell className="text-2xl" />
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.subscriptionGrowthPercent >= 0 ? 'bg-orange-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${stats.subscriptionGrowthPercent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {stats.subscriptionGrowthPercent >= 0 ? '+' : ''}{stats.subscriptionGrowthPercent}%
                 </span>
               </div>
               <div>
-                <h3 className="text-orange-100 text-sm font-medium mb-1">Subscriptions</h3>
-                <p className="text-3xl font-bold">{stats.activeSubscriptions.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Subscriptions</h3>
+                <p className="text-3xl font-bold text-gray-800">{stats.activeSubscriptions.toLocaleString()}</p>
               </div>
             </div>
 
             {/* Card 4: Total Searches */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-purple-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaSearch className="text-2xl" />
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.searchGrowthPercent >= 0 ? 'bg-purple-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${stats.searchGrowthPercent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {stats.searchGrowthPercent >= 0 ? '+' : ''}{stats.searchGrowthPercent}%
                 </span>
               </div>
               <div>
-                <h3 className="text-purple-100 text-sm font-medium mb-1">Total Searches</h3>
-                <p className="text-3xl font-bold">{stats.totalSearches.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Total Searches</h3>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalSearches.toLocaleString()}</p>
               </div>
             </div>
 
             {/* Card 5: Total Records */}
-            <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-cyan-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaDatabase className="text-2xl" />
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded ${stats.recordGrowthPercent >= 0 ? 'bg-cyan-700 bg-opacity-40' : 'bg-red-500 bg-opacity-40'}`}>
+                <span className={`text-sm font-semibold px-2.5 py-1 rounded-full ${stats.recordGrowthPercent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {stats.recordGrowthPercent >= 0 ? '+' : ''}{stats.recordGrowthPercent}%
                 </span>
               </div>
               <div>
-                <h3 className="text-cyan-100 text-sm font-medium mb-1">Records Scraped</h3>
-                <p className="text-3xl font-bold">{stats.totalRecords.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Records Scraped</h3>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalRecords.toLocaleString()}</p>
               </div>
             </div>
 
             {/* Card 6: Active Users */}
-            <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transform hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
-                <div className="p-3 bg-pink-400 bg-opacity-30 rounded-full">
+                <div className="p-3 bg-primary/10 text-primary rounded-xl">
                   <FaChartLine className="text-2xl" />
                 </div>
-                <span className="text-sm font-medium bg-pink-700 bg-opacity-40 px-2 py-1 rounded">Live</span>
+                <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">Live</span>
               </div>
               <div>
-                <h3 className="text-pink-100 text-sm font-medium mb-1">Active Users</h3>
-                <p className="text-3xl font-bold">{stats.activeSubscriptions.toLocaleString()}</p>
+                <h3 className="text-gray-500 text-sm font-medium mb-1">Active Users</h3>
+                <p className="text-3xl font-bold text-gray-800">{stats.activeSubscriptions.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -166,7 +166,7 @@ const Home = () => {
               data={chartData.revenue}
               title="Revenue Overview"
               areas={[
-                { dataKey: 'revenue', color: '#10B981', name: 'Revenue' }
+                { dataKey: 'revenue', color: '#0F792C', name: 'Revenue' }
               ]}
               height={320}
             />
@@ -194,7 +194,7 @@ const Home = () => {
               title="Scraping Activity"
               bars={[
                 { dataKey: 'searches', color: '#8B5CF6', name: 'Searches' },
-                { dataKey: 'records', color: '#10B981', name: 'Records' }
+                { dataKey: 'records', color: '#0F792C', name: 'Records' }
               ]}
               height={320}
             />
@@ -213,7 +213,7 @@ const Home = () => {
               data={chartData.revenue}
               title="Monthly Revenue"
               bars={[
-                { dataKey: 'revenue', color: '#10B981', name: 'Revenue' }
+                { dataKey: 'revenue', color: '#0F792C', name: 'Revenue' }
               ]}
               height={350}
             />

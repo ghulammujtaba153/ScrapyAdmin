@@ -1,7 +1,13 @@
-import React from 'react';
-import { FaSearch, FaDatabase, FaClock } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaSearch, FaDatabase, FaClock, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const RecentSearches = ({ searches = [] }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+    
+    const totalPages = Math.ceil(searches.length / itemsPerPage);
+    const currentSearches = searches.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -41,12 +47,12 @@ const RecentSearches = ({ searches = [] }) => {
                         <p>No search history found</p>
                     </div>
                 ) : (
-                    searches.map((search) => (
+                    currentSearches.map((search) => (
                         <div key={search._id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start space-x-3">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <FaSearch className="text-blue-600" />
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <FaSearch className="text-primary" />
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-800 line-clamp-1">
@@ -72,6 +78,37 @@ const RecentSearches = ({ searches = [] }) => {
                     ))
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <span className="text-sm text-gray-500">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className={`p-2 rounded-lg border flex items-center justify-center transition-colors
+                                ${currentPage === 1 
+                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-primary'}`}
+                        >
+                            <FaChevronLeft className="text-xs" />
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className={`p-2 rounded-lg border flex items-center justify-center transition-colors
+                                ${currentPage === totalPages 
+                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-primary'}`}
+                        >
+                            <FaChevronRight className="text-xs" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

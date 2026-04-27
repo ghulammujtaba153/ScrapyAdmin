@@ -13,7 +13,7 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
             case 'Expired':
                 return <FaExclamationCircle className="text-gray-500" />;
             default:
-                return <FaCheckCircle className="text-blue-500" />;
+                return <FaCheckCircle className="text-primary" />;
         }
     };
 
@@ -28,7 +28,7 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
             case 'Expired':
                 return 'bg-gray-100 text-gray-800';
             case 'Completed':
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-primary/10 text-primary';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -47,12 +47,12 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
         <div className="space-y-6">
             {/* Active Subscription Card */}
             {activeSubscription && (
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-md p-6 text-white">
+                <div className="bg-primary rounded-xl shadow-md p-6 text-white">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-lg font-semibold mb-1">Current Active Plan</h3>
-                            <p className="text-3xl font-bold">{activeSubscription.package?.name || 'N/A'}</p>
-                            <p className="text-blue-100 mt-2">
+                            <p className="text-3xl font-bold">{activeSubscription.package?.name || activeSubscription.packageName || 'N/A'}</p>
+                            <p className="text-white/80 mt-2">
                                 {typeof activeSubscription.amount === 'string' && activeSubscription.amount.startsWith('$') 
                                     ? activeSubscription.amount 
                                     : `$${activeSubscription.amount?.toLocaleString() || 0}`}
@@ -60,22 +60,22 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
                             </p>
                         </div>
                         <div className="text-right">
-                            <p className="text-blue-100 text-sm">Started</p>
-                            <p className="font-semibold">{formatDate(activeSubscription.startDate)}</p>
-                            {activeSubscription.endDate && (
+                            <p className="text-white/80 text-sm">Started</p>
+                            <p className="font-semibold">{formatDate(activeSubscription.startDate || activeSubscription.createdAt)}</p>
+                            {(activeSubscription.endDate || activeSubscription.planExpiry) && (
                                 <>
-                                    <p className="text-blue-100 text-sm mt-2">Expires</p>
-                                    <p className="font-semibold">{formatDate(activeSubscription.endDate)}</p>
+                                    <p className="text-white/80 text-sm mt-2">Expires</p>
+                                    <p className="font-semibold">{formatDate(activeSubscription.endDate || activeSubscription.planExpiry)}</p>
                                 </>
                             )}
                         </div>
                     </div>
                     {activeSubscription.package?.features?.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-blue-400">
-                            <p className="text-sm text-blue-100 mb-2">Features:</p>
+                        <div className="mt-4 pt-4 border-t border-white/20">
+                            <p className="text-sm text-white/80 mb-2">Features:</p>
                             <div className="flex flex-wrap gap-2">
                                 {activeSubscription.package.features.map((feature, idx) => (
-                                    <span key={idx} className="bg-blue-400 bg-opacity-30 px-3 py-1 rounded-full text-sm">
+                                    <span key={idx} className="bg-white/20 px-3 py-1 rounded-full text-sm">
                                         {feature}
                                     </span>
                                 ))}
@@ -125,7 +125,7 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
                                             <div className="flex items-center">
                                                 {getStatusIcon(sub.status)}
                                                 <span className="ml-2 font-medium text-gray-900">
-                                                    {sub.package?.name || 'N/A'}
+                                                    {sub.package?.name || sub.packageName || 'N/A'}
                                                 </span>
                                             </div>
                                         </td>
@@ -140,10 +140,10 @@ const SubscriptionHistory = ({ subscriptions = [], activeSubscription }) => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                            {formatDate(sub.startDate)}
+                                            {formatDate(sub.startDate || sub.createdAt)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                            {formatDate(sub.endDate)}
+                                            {formatDate(sub.endDate || sub.planExpiry)}
                                         </td>
                                     </tr>
                                 ))

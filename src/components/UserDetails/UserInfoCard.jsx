@@ -29,21 +29,21 @@ const UserInfoCard = ({ user }) => {
             case 'admin':
                 return 'bg-purple-100 text-purple-800';
             default:
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-primary/10 text-primary';
         }
     };
 
     return (
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8">
+            <div className="bg-primary px-6 py-8">
                 <div className="flex items-center">
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-600 text-3xl font-bold shadow-lg">
+                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-primary text-3xl font-bold shadow-lg">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div className="ml-5">
                         <h2 className="text-2xl font-bold text-white">{user.name}</h2>
-                        <p className="text-blue-100">{user.email}</p>
+                        <p className="text-white/80">{user.email}</p>
                         <div className="flex gap-2 mt-2">
                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.role)}`}>
                                 {user.role?.toUpperCase()}
@@ -57,18 +57,18 @@ const UserInfoCard = ({ user }) => {
             </div>
 
             {/* Subscription Highlights */}
-            <div className="px-6 py-4 bg-blue-50 border-y border-blue-100 flex items-center justify-between">
+            <div className="px-6 py-4 bg-primary/5 border-y border-primary/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-md">
                         <FaRocket />
                     </div>
                     <div>
-                        <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Current Plan</p>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Current Plan</p>
                         <h4 className="font-black text-gray-900">{user.planName || 'No Active Plan'}</h4>
                     </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Expiry Date</p>
+                    <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Expiry Date</p>
                     <h4 className="font-black text-gray-900">
                         {user.planExpiry ? formatDate(user.planExpiry) : (user.planName ? 'Lifetime' : 'N/A')}
                     </h4>
@@ -102,7 +102,7 @@ const UserInfoCard = ({ user }) => {
 
 const InfoItem = ({ icon, label, value }) => (
     <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-        <span className="text-blue-500 mt-1">{icon}</span>
+        <span className="text-primary mt-1">{icon}</span>
         <div>
             <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
             <p className="text-gray-800 font-medium">{value}</p>
