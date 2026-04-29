@@ -33,6 +33,20 @@ const MailNotifications = () => {
         fetchCampaigns();
     }, []);
 
+    useEffect(() => {
+        const shouldPoll = campaigns.some(
+            (campaign) => campaign.status === 'Sending' || campaign.status === 'Scheduled'
+        );
+
+        if (!shouldPoll) return;
+
+        const intervalId = setInterval(() => {
+            fetchCampaigns();
+        }, 10000);
+
+        return () => clearInterval(intervalId);
+    }, [campaigns]);
+
     const fetchCampaigns = async () => {
         try {
             setLoading(true);
@@ -80,7 +94,7 @@ const MailNotifications = () => {
                     await api.delete(`/campaigns/${id}`);
                     fetchCampaigns();
                 } catch (error) {
-                    alert("Failed to delete campaign");
+                    alert(error.response?.data?.message || "Failed to delete campaign");
                 }
             }
         });
@@ -96,6 +110,9 @@ const MailNotifications = () => {
             onConfirm: async () => {
                 try {
                     setSendingId(id);
+                    setCampaigns(prev =>
+                        prev.map(c => (c._id === id ? { ...c, status: 'Sending' } : c))
+                    );
                     const res = await api.post(`/campaigns/${id}/send`);
                     if (res.data.success) {
                         fetchCampaigns();
@@ -193,6 +210,13 @@ const MailNotifications = () => {
                                         <div className="mx-3 w-px h-3 bg-gray-200"></div>
                                         <FaCheckCircle className="mr-2 text-green-500" />
                                         <span className="font-medium text-gray-700 mr-1">{campaign.stats.sent}</span> Sent
+                                        {campaign.stats.failed > 0 && (
+                                            <>
+                                                <div className="mx-3 w-px h-3 bg-gray-200"></div>
+                                                <FaExclamationCircle className="mr-2 text-red-500" />
+                                                <span className="font-medium text-gray-700 mr-1">{campaign.stats.failed}</span> Failed
+                                            </>
+                                        )}
                                     </div>
 
                                     <div className="flex space-x-3">
@@ -213,6 +237,11 @@ const MailNotifications = () => {
                                         </button>
                                     </div>
                                 </div>
+                                {campaign.scheduledAt && campaign.status === 'Scheduled' && (
+                                    <div className="px-6 py-3 bg-yellow-50 border-t border-yellow-100 text-xs text-yellow-700">
+                                        Scheduled for: {new Date(campaign.scheduledAt).toLocaleString()}
+                                    </div>
+                                )}
                                 {campaign.sentAt && (
                                     <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
                                         Sent on: {new Date(campaign.sentAt).toLocaleString()}
@@ -232,6 +261,16 @@ const MailNotifications = () => {
                 }}
                 campaign={selectedCampaign}
                 onSave={handleSave}
+            />
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                type={confirmModal.type}
             />
         </div>
     );

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../config/url';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaPaperPlane } from 'react-icons/fa';
 import UserModal from '../components/UserModal';
+import SendPaymentLinkModal from '../components/SendPaymentLinkModal';
 
 const UserManagement = () => {
     const navigate = useNavigate();
@@ -15,6 +16,8 @@ const UserManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [statusFilter, setStatusFilter] = useState('');
+    const [isPaymentLinkModalOpen, setIsPaymentLinkModalOpen] = useState(false);
+    const [paymentLinkUser, setPaymentLinkUser] = useState(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -89,6 +92,24 @@ const UserManagement = () => {
         }
     };
 
+    const handleOpenPaymentLinkModal = (user) => {
+        setPaymentLinkUser(user);
+        setIsPaymentLinkModalOpen(true);
+    };
+
+    const handleSendPaymentLink = async (paymentLink) => {
+        if (!paymentLinkUser) return;
+
+        try {
+            await axios.post(`${BASE_URL}/auth/send-payment-link/${paymentLinkUser._id}`, { paymentLink });
+            alert('Payment link email sent successfully');
+        } catch (error) {
+            console.error('Error sending payment link', error);
+            alert(error.response?.data?.message || 'Failed to send payment link');
+            throw error;
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -146,6 +167,9 @@ const UserManagement = () => {
                                     Role
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    User Type
+                                </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -154,6 +178,9 @@ const UserManagement = () => {
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Created At
                                 </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Payment Link
+                                </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Actions
                                 </th>
@@ -161,9 +188,9 @@ const UserManagement = () => {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6" className="text-center py-4">Loading...</td></tr>
+                                <tr><td colSpan="9" className="text-center py-4">Loading...</td></tr>
                             ) : users.length === 0 ? (
-                                <tr><td colSpan="6" className="text-center py-4">No users found.</td></tr>
+                                <tr><td colSpan="9" className="text-center py-4">No users found.</td></tr>
                             ) : users.map((u) => (
                                 <tr key={u._id}>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -183,6 +210,9 @@ const UserManagement = () => {
                                             <span aria-hidden className={`absolute inset-0 ${u.role === 'admin' ? 'bg-green-200' : 'bg-gray-200'} opacity-50 rounded-full`}></span>
                                             <span className="relative">{u.role}</span>
                                         </span>
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <p className="text-gray-900 whitespace-no-wrap">{u.userType || u.type || '-'}</p>
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <select
@@ -207,6 +237,20 @@ const UserManagement = () => {
                                         <p className="text-gray-900 whitespace-no-wrap">
                                             {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
                                         </p>
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        {String(u.userType || '').toLowerCase() === 'intl' ? (
+                                            <button
+                                                onClick={() => handleOpenPaymentLinkModal(u)}
+                                                className="inline-flex items-center px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-semibold"
+                                                title="Send payment link"
+                                            >
+                                                <FaPaperPlane className="mr-2" />
+                                                Send Link
+                                            </button>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">Local users use the standard flow</span>
+                                        )}
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <div className="flex items-center justify-center whitespace-nowrap">
@@ -268,6 +312,16 @@ const UserManagement = () => {
                 onClose={() => setIsModalOpen(false)}
                 user={currentUser}
                 onSave={handleSave}
+            />
+
+            <SendPaymentLinkModal
+                isOpen={isPaymentLinkModalOpen}
+                onClose={() => {
+                    setIsPaymentLinkModalOpen(false);
+                    setPaymentLinkUser(null);
+                }}
+                user={paymentLinkUser}
+                onSend={handleSendPaymentLink}
             />
         </div>
     );
