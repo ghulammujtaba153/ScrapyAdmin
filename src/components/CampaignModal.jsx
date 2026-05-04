@@ -15,6 +15,7 @@ import {
 
 const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
     const [activeTab, setActiveTab] = useState('editor'); // 'editor' or 'preview'
+    const [sendType, setSendType] = useState('immediate'); // 'immediate' or 'schedule'
     const [previewHtml, setPreviewHtml] = useState('');
     const [loadingPreview, setLoadingPreview] = useState(false);
     const [formData, setFormData] = useState({
@@ -44,6 +45,7 @@ const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
                     manualEmails: campaign.targetType === 'Manual' ? campaign.recipients.map(r => r.email).join(', ') : '',
                     scheduledAt: campaign.scheduledAt ? new Date(campaign.scheduledAt).toISOString().slice(0, 16) : '',
                 });
+                setSendType(campaign.scheduledAt ? 'schedule' : 'immediate');
             } else {
                 setFormData({
                     title: '',
@@ -54,6 +56,7 @@ const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
                     targetType: 'Manual',
                     scheduledAt: '',
                 });
+                setSendType('immediate');
             }
         }
     }, [isOpen, campaign]);
@@ -120,8 +123,13 @@ const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
 
         const payload = {
             ...formData,
-            recipients: finalRecipients
+            recipients: finalRecipients,
+            sendImmediately: sendType === 'immediate'
         };
+
+        if (sendType === 'immediate') {
+            payload.scheduledAt = '';
+        }
         
         onSave(payload);
     };
@@ -203,19 +211,46 @@ const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Schedule Date (Optional)</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                                        <FaCalendarAlt />
-                                    </div>
-                                    <input 
-                                        type="datetime-local" 
-                                        name="scheduledAt"
-                                        value={formData.scheduledAt}
-                                        onChange={handleInputChange}
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"
-                                    />
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Sending Options</label>
+                                <div className="flex gap-4 mb-3">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="sendType" 
+                                            value="immediate" 
+                                            checked={sendType === 'immediate'} 
+                                            onChange={() => setSendType('immediate')}
+                                            className="w-4 h-4 text-primary focus:ring-primary"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Send Immediately</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="sendType" 
+                                            value="schedule" 
+                                            checked={sendType === 'schedule'} 
+                                            onChange={() => setSendType('schedule')}
+                                            className="w-4 h-4 text-primary focus:ring-primary"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Schedule</span>
+                                    </label>
                                 </div>
+                                {sendType === 'schedule' && (
+                                    <div className="relative animate-in slide-in-from-top-2 duration-200">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <FaCalendarAlt />
+                                        </div>
+                                        <input 
+                                            type="datetime-local" 
+                                            name="scheduledAt"
+                                            value={formData.scheduledAt}
+                                            onChange={handleInputChange}
+                                            required={sendType === 'schedule'}
+                                            className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -403,7 +438,10 @@ const CampaignModal = ({ isOpen, onClose, campaign, onSave }) => {
                         type="submit"
                         className="flex-[2] px-6 py-4 rounded-2xl font-bold text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
                     >
-                        {campaign ? 'Update Campaign' : 'Save & Prepare Campaign'}
+                        {campaign 
+                            ? (sendType === 'immediate' ? 'Update & Send Now' : 'Update Campaign') 
+                            : (sendType === 'immediate' ? 'Create & Send Now' : 'Save & Prepare Campaign')
+                        }
                         <FaEnvelope className="text-sm opacity-50" />
                     </button>
                 </div>

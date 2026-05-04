@@ -182,20 +182,11 @@ const Home = () => {
           </div>
 
           {/* Charts Row 2 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <DonutChartComponent
               data={chartData.subscriptions}
               title="Subscription Distribution"
               centerLabel="Subscribers"
-              height={320}
-            />
-            <BarChartComponent
-              data={chartData.activity}
-              title="Scraping Activity"
-              bars={[
-                { dataKey: 'searches', color: '#8B5CF6', name: 'Searches' },
-                { dataKey: 'records', color: '#0F792C', name: 'Records' }
-              ]}
               height={320}
             />
             <PieChartComponent
@@ -208,6 +199,19 @@ const Home = () => {
           </div>
 
           {/* Charts Row 3 - Full Width */}
+          <div className="mb-8">
+            <BarChartComponent
+              data={chartData.activity}
+              title="Scraping Activity"
+              bars={[
+                { dataKey: 'searches', color: '#8B5CF6', name: 'Searches' },
+                { dataKey: 'records', color: '#0F792C', name: 'Records' }
+              ]}
+              height={350}
+            />
+          </div>
+
+          {/* Charts Row 4 - Full Width */}
           <div className="mb-8">
             <BarChartComponent
               data={chartData.revenue}

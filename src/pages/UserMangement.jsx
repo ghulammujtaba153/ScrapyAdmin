@@ -5,6 +5,8 @@ import { BASE_URL } from '../config/url';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaPaperPlane } from 'react-icons/fa';
 import UserModal from '../components/UserModal';
 import SendPaymentLinkModal from '../components/SendPaymentLinkModal';
+import ConfirmationModal from '../components/ConfirmationModal';
+import AlertModal from '../components/AlertModal';
 
 const UserManagement = () => {
     const navigate = useNavigate();
@@ -18,6 +20,43 @@ const UserManagement = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [isPaymentLinkModalOpen, setIsPaymentLinkModalOpen] = useState(false);
     const [paymentLinkUser, setPaymentLinkUser] = useState(null);
+
+    const [confirmModalState, setConfirmModalState] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'primary'
+    });
+
+    const openConfirmModal = (title, message, onConfirm, type = 'primary') => {
+        setConfirmModalState({
+            isOpen: true,
+            title,
+            message,
+            onConfirm,
+            type
+        });
+    };
+
+    const closeConfirmModal = () => {
+        setConfirmModalState(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const [alertModalState, setAlertModalState] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title, message, type = 'info') => {
+        setAlertModalState({ isOpen: true, title, message, type });
+    };
+
+    const closeAlert = () => {
+        setAlertModalState(prev => ({ ...prev, isOpen: false }));
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -66,30 +105,42 @@ const UserManagement = () => {
         navigate(`/user-management/${userId}`);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this user?")) {
-            try {
-                await axios.delete(`${BASE_URL}/auth/deleteUser/${id}`);
-                setUsers(prev => prev.filter(u => u._id !== id));
-            } catch (error) {
-                console.error("Error deleting user", error);
-                alert("Failed to delete user");
-            }
-        }
+    const handleDelete = (id) => {
+        openConfirmModal(
+            "Delete User",
+            "Are you sure you want to delete this user? This action cannot be undone.",
+            async () => {
+                try {
+                    await axios.delete(`${BASE_URL}/auth/deleteUser/${id}`);
+                    setUsers(prev => prev.filter(u => u._id !== id));
+                } catch (error) {
+                    console.error("Error deleting user", error);
+                    showAlert("Error", "Failed to delete user", "error");
+                }
+            },
+            "danger"
+        );
     };
 
     const handleSave = () => {
         fetchUsers(); // Refresh list after save/update
     };
 
-    const handleStatusChange = async (userId, newStatus) => {
-        try {
-            await axios.put(`${BASE_URL}/auth/update/${userId}`, { status: newStatus });
-            setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
-        } catch (error) {
-            console.error("Error updating status", error);
-            alert("Failed to update status");
-        }
+    const handleStatusChange = (userId, newStatus) => {
+        openConfirmModal(
+            "Change Status",
+            `Are you sure you want to change this user's status to ${newStatus.replace('_', ' ')}?`,
+            async () => {
+                try {
+                    await axios.put(`${BASE_URL}/auth/update/${userId}`, { status: newStatus });
+                    setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
+                } catch (error) {
+                    console.error("Error updating status", error);
+                    showAlert("Error", "Failed to update status", "error");
+                }
+            },
+            "warning"
+        );
     };
 
     const handleOpenPaymentLinkModal = (user) => {
@@ -102,10 +153,10 @@ const UserManagement = () => {
 
         try {
             await axios.post(`${BASE_URL}/auth/send-payment-link/${paymentLinkUser._id}`, { paymentLink });
-            alert('Payment link email sent successfully');
+            showAlert("Success", 'Payment link email sent successfully', 'success');
         } catch (error) {
             console.error('Error sending payment link', error);
-            alert(error.response?.data?.message || 'Failed to send payment link');
+            showAlert("Error", error.response?.data?.message || 'Failed to send payment link', 'error');
             throw error;
         }
     };
@@ -312,6 +363,7 @@ const UserManagement = () => {
                 onClose={() => setIsModalOpen(false)}
                 user={currentUser}
                 onSave={handleSave}
+                showAlert={showAlert}
             />
 
             <SendPaymentLinkModal
@@ -322,6 +374,23 @@ const UserManagement = () => {
                 }}
                 user={paymentLinkUser}
                 onSend={handleSendPaymentLink}
+            />
+
+            <ConfirmationModal
+                isOpen={confirmModalState.isOpen}
+                onClose={closeConfirmModal}
+                onConfirm={confirmModalState.onConfirm}
+                title={confirmModalState.title}
+                message={confirmModalState.message}
+                type={confirmModalState.type}
+            />
+
+            <AlertModal
+                isOpen={alertModalState.isOpen}
+                onClose={closeAlert}
+                title={alertModalState.title}
+                message={alertModalState.message}
+                type={alertModalState.type}
             />
         </div>
     );

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BASE_URL } from '../config/url';
+import ConfirmationModal from './ConfirmationModal';
 
-const UserModal = ({ isOpen, onClose, user, onSave }) => {
+const UserModal = ({ isOpen, onClose, user, onSave, showAlert }) => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -12,6 +13,13 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         userType: 'local'
     });
     const [loading, setLoading] = useState(false);
+    const [confirmState, setConfirmState] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'primary'
+    });
 
     useEffect(() => {
         if (user) {
@@ -40,29 +48,39 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleConfirmSubmit = async () => {
         setLoading(true);
         try {
             let res;
             if (user) {
                 // Update existing user
-                res = await axios.put(`${BASE_URL}/auth/updateUser/${user._id}`, formData);
-                alert("User updated successfully");
+                res = await axios.put(`${BASE_URL}/auth/update/${user._id}`, formData);
+                if (showAlert) showAlert("Success", "User updated successfully", "success");
                 onSave(res.data.user);
             } else {
                 // Invite new user
                 res = await axios.post(`${BASE_URL}/auth/invite-user`, formData);
-                alert("Invitation sent successfully");
+                if (showAlert) showAlert("Success", "Invitation sent successfully", "success");
                 onSave(res.data.user);
             }
             onClose();
         } catch (error) {
             console.error("Error saving user", error);
-            alert(error.response?.data?.message || "Failed to save user");
+            if (showAlert) showAlert("Error", error.response?.data?.message || "Failed to save user", "error");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setConfirmState({
+            isOpen: true,
+            title: user ? 'Confirm Update' : 'Confirm Invitation',
+            message: user ? 'Are you sure you want to update this user?' : 'Are you sure you want to send an invitation to this user?',
+            onConfirm: handleConfirmSubmit,
+            type: 'primary'
+        });
     };
 
     if (!isOpen) return null;
@@ -179,6 +197,15 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                     </div>
                 </div>
             </div>
+            
+            <ConfirmationModal
+                isOpen={confirmState.isOpen}
+                onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                message={confirmState.message}
+                type={confirmState.type}
+            />
         </div>
     );
 };
