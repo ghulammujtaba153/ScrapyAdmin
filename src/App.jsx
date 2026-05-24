@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import Subscriptions from './pages/Subscriptions';
 import UserDetails from './pages/UserDetails';
 import MailNotifications from './pages/MailNotifications';
+import Blogs from './pages/Blogs';
+import MailMessages from './pages/MailMessages';
 
 // Layout component for dashboard pages (Sidebar + Content)
 const DashboardLayout = () => {
@@ -46,6 +48,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/mail-notifications" element={<MailNotifications />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/mail-messages" element={<MailMessages />} />
 
         </Route>
       </Route>

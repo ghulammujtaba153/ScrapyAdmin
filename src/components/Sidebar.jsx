@@ -11,6 +11,8 @@ const Sidebar = ({ isOpen, setIsOpen, toggleSidebar }) => {
         { path: '/user-management', name: 'User Management', icon: <FaUser /> },
         { path: '/subscriptions', name: 'Subscriptions', icon: <FaChartLine /> },
         { path: "/mail-notifications", name: "Mail Notifications", icon: <FaBoxOpen /> },
+        { path: "/blogs", name: "Blogs", icon: <FaBoxOpen /> },
+        { path: "/mail-messages", name: "Mail Messages", icon: <FaBoxOpen /> },
         { path: "/profile", name: "Profile", icon: <FaUser /> }
     ];
 
