@@ -221,6 +221,12 @@ const UserManagement = () => {
                                     User Type
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Account
+                                </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Team / Invitation
+                                </th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -239,9 +245,9 @@ const UserManagement = () => {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="9" className="text-center py-4">Loading...</td></tr>
+                                <tr><td colSpan="11" className="text-center py-4">Loading...</td></tr>
                             ) : users.length === 0 ? (
-                                <tr><td colSpan="9" className="text-center py-4">No users found.</td></tr>
+                                <tr><td colSpan="11" className="text-center py-4">No users found.</td></tr>
                             ) : users.map((u) => (
                                 <tr key={u._id}>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -264,6 +270,48 @@ const UserManagement = () => {
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <p className="text-gray-900 whitespace-no-wrap">{u.userType || u.type || '-'}</p>
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        {u.accountType === 'subscriber_owner' ? (
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                Subscriber · Team owner
+                                            </span>
+                                        ) : u.accountType === 'subscriber' ? (
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Subscriber
+                                            </span>
+                                        ) : u.accountType === 'invited_member' ? (
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                                                Invited member
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">No subscription</span>
+                                        )}
+                                    </td>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        {u.invitedBy ? (
+                                            <div>
+                                                <p className="text-gray-900 text-xs font-medium">
+                                                    Invited by {u.invitedBy.name}
+                                                </p>
+                                                <p className="text-gray-500 text-xs">{u.invitedBy.email}</p>
+                                                {u.teamName && (
+                                                    <p className="text-gray-400 text-xs mt-0.5">Team: {u.teamName}</p>
+                                                )}
+                                            </div>
+                                        ) : u.invitedMembers?.length > 0 ? (
+                                            <div>
+                                                <p className="text-gray-500 text-xs mb-1">Invited:</p>
+                                                {u.invitedMembers.map((m) => (
+                                                    <div key={m._id} className="mb-1">
+                                                        <p className="text-gray-900 text-xs font-medium">{m.name}</p>
+                                                        <p className="text-gray-500 text-xs">{m.email}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">—</span>
+                                        )}
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <select
