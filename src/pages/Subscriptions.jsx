@@ -1,21 +1,55 @@
 import React, { useEffect, useState } from 'react';
 import api from '../config/url';
-import { FaUserPlus, FaMoneyBillWave, FaChartLine, FaBoxOpen, FaClock, FaSyncAlt } from 'react-icons/fa';
-import StatsCard from '../components/StatsCard';
+import { Card, Col, Row, Spin, Statistic, Button } from 'antd';
+import {
+    DollarOutlined,
+    TeamOutlined,
+    ClockCircleOutlined,
+    LineChartOutlined,
+    ReloadOutlined,
+    UserOutlined,
+    ExclamationCircleOutlined,
+    StopOutlined,
+    MailOutlined,
+} from '@ant-design/icons';
 import AnalyticsCharts from '../components/AnalyticsCharts';
 import SubscriptionsTable from '../components/SubscriptionsTable';
+import AdminPageHeader from '../components/admin/AdminPageHeader';
+
+const mapSubscriptionStatus = (sub) => {
+    if (sub.planExpiry && new Date(sub.planExpiry) < new Date() && sub.status === 'active') {
+        return 'Expired';
+    }
+    switch (sub.status) {
+        case 'active':
+            return 'Active';
+        case 'under_review':
+            return 'Pending';
+        case 'blocked':
+            return 'Blocked';
+        case 'invited':
+            return 'Invited';
+        default:
+            return sub.status?.charAt(0).toUpperCase() + sub.status?.slice(1) || 'Unknown';
+    }
+};
 
 const Subscriptions = () => {
     const [subscriptions, setSubscriptions] = useState([]);
-    const [analytics, setAnalytics] = useState({ 
-        revenueTrend: [], 
+    const [analytics, setAnalytics] = useState({
+        revenueTrend: [],
         statusDistribution: [],
+        planDistribution: [],
         stats: {
             totalUsersWithPlan: 0,
             activeSubscriptions: 0,
             underReviewCount: 0,
-            totalRevenue: 0
-        }
+            expiredCount: 0,
+            pendingPaymentCount: 0,
+            blockedCount: 0,
+            invitedCount: 0,
+            totalRevenue: 0,
+        },
     });
     const [loading, setLoading] = useState(true);
 
@@ -24,26 +58,28 @@ const Subscriptions = () => {
             setLoading(true);
             const [subsRes, analyticsRes] = await Promise.all([
                 api.get('/admin-dashboard/subscriptions/list'),
-                api.get('/admin-dashboard/subscriptions/analytics')
+                api.get('/admin-dashboard/subscriptions/analytics'),
             ]);
 
-            // Map data to table format
-            const mappedSubscriptions = subsRes.data.subscriptions.map(sub => ({
+            const mappedSubscriptions = subsRes.data.subscriptions.map((sub) => ({
                 id: sub._id,
                 user: sub.name || sub.email,
                 plan: sub.planName || 'N/A',
+                planId: sub.planId || '—',
                 date: new Date(sub.createdAt).toLocaleDateString(),
                 amount: sub.planAmount || '$0.00',
-                status: sub.status === 'active' ? 'Active' : sub.status === 'under_review' ? 'Pending' : sub.status.charAt(0).toUpperCase() + sub.status.slice(1),
+                status: mapSubscriptionStatus(sub),
+                rawStatus: sub.status,
                 email: sub.email,
                 expiry: sub.planExpiry ? new Date(sub.planExpiry).toLocaleDateString() : 'Lifetime',
-                screenshot: sub.paymentScreenshot
+                screenshot: sub.paymentScreenshot,
+                userType: sub.userType === 'INTL' ? 'International' : 'Local',
             }));
 
             setSubscriptions(mappedSubscriptions);
             setAnalytics(analyticsRes.data);
         } catch (error) {
-            console.error("Error fetching subscription data", error);
+            console.error('Error fetching subscription data', error);
         } finally {
             setLoading(false);
         }
@@ -54,74 +90,96 @@ const Subscriptions = () => {
     }, []);
 
     const { stats } = analytics;
+    const avgTicket = stats.totalUsersWithPlan
+        ? (stats.totalRevenue / stats.totalUsersWithPlan).toFixed(2)
+        : '0.00';
+
+    const statCards = [
+        {
+            title: 'Total revenue',
+            value: stats.totalRevenue,
+            icon: <DollarOutlined style={{ color: '#0F792C' }} />,
+            precision: 2,
+        },
+        {
+            title: 'Active plans',
+            value: stats.activeSubscriptions,
+            icon: <TeamOutlined style={{ color: '#1677ff' }} />,
+        },
+        {
+            title: 'Total subscribers',
+            value: stats.totalUsersWithPlan,
+            icon: <UserOutlined style={{ color: '#722ed1' }} />,
+        },
+        {
+            title: 'Under review',
+            value: stats.underReviewCount,
+            icon: <ClockCircleOutlined style={{ color: '#faad14' }} />,
+        },
+        {
+            title: 'Pending payment',
+            value: stats.pendingPaymentCount,
+            icon: <ExclamationCircleOutlined style={{ color: '#fa8c16' }} />,
+        },
+        {
+            title: 'Expired plans',
+            value: stats.expiredCount,
+            icon: <StopOutlined style={{ color: '#ff4d4f' }} />,
+        },
+        {
+            title: 'Invited',
+            value: stats.invitedCount,
+            icon: <MailOutlined style={{ color: '#13c2c2' }} />,
+        },
+        {
+            title: 'Avg. ticket size',
+            value: avgTicket,
+            icon: <LineChartOutlined style={{ color: '#722ed1' }} />,
+            formatter: (v) => `$${v}`,
+        },
+    ];
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Subscription Analytics</h1>
-                        <p className="text-gray-500 mt-1">Real-time overview of revenue, plans, and pending approvals.</p>
-                    </div>
-                    <button 
-                        onClick={fetchData}
-                        disabled={loading}
-                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-semibold active:scale-95 disabled:opacity-50"
-                    >
-                        <FaSyncAlt className={loading ? 'animate-spin' : ''} />
-                        Refresh Analytics
-                    </button>
-                </div>
+        <div className="max-w-7xl mx-auto">
+            <AdminPageHeader
+                title="Subscription analytics"
+                subtitle="Stats from user profile fields — planName, planAmount, planExpiry, status, and payment proof"
+                extra={
+                    <Button icon={<ReloadOutlined spin={loading} />} onClick={fetchData} loading={loading}>
+                        Refresh
+                    </Button>
+                }
+            />
 
-                {/* Stats Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                    <StatsCard
-                        title="Total Revenue"
-                        value={`$${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                        change="+5.2%"
-                        icon={<FaMoneyBillWave />}
-                        color="bg-green-500"
-                    />
-                    <StatsCard
-                        title="Active Subscriptions"
-                        value={stats.activeSubscriptions}
-                        change="+12%"
-                        icon={<FaBoxOpen />}
-                        color="bg-blue-500"
-                    />
-                    <StatsCard
-                        title="Under Review"
-                        value={stats.underReviewCount}
-                        change="Pending Approval"
-                        icon={<FaClock />}
-                        color="bg-amber-500"
-                    />
-                    <StatsCard
-                        title="Avg. Ticket Size"
-                        value={`$${stats.totalUsersWithPlan ? (stats.totalRevenue / stats.totalUsersWithPlan).toFixed(2) : '0.00'}`}
-                        change="Overall"
-                        icon={<FaChartLine />}
-                        color="bg-purple-500"
-                    />
-                </div>
+            <Spin spinning={loading}>
+                <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                    {statCards.map((card) => (
+                        <Col xs={24} sm={12} lg={6} key={card.title}>
+                            <Card bordered={false} className="shadow-sm">
+                                <Statistic
+                                    title={card.title}
+                                    value={card.value}
+                                    prefix={card.icon}
+                                    precision={card.precision}
+                                    formatter={card.formatter}
+                                />
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
 
-                {/* Analytics & Charts */}
-                <div className="mb-10">
+                <div style={{ marginBottom: 24 }}>
                     <AnalyticsCharts
                         revenueData={analytics.revenueTrend}
                         distributionData={analytics.statusDistribution}
+                        planDistribution={analytics.planDistribution}
                     />
                 </div>
 
-                {/* Main Data Table */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="px-6 py-5 border-b border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-800">Recent Subscription Activity</h2>
-                    </div>
+                <Card title="All subscribers" bordered={false} className="shadow-sm">
                     <SubscriptionsTable data={subscriptions} loading={loading} />
-                </div>
-            </div>
+                </Card>
+            </Spin>
         </div>
     );
 };

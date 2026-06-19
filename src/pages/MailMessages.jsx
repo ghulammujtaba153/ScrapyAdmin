@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../config/url';
+import { Card } from 'antd';
+import AdminPageHeader from '../components/admin/AdminPageHeader';
 import {
   FaEnvelope,
   FaPlus,
@@ -347,7 +349,14 @@ const MailMessages = () => {
   });
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 relative">
+    <div className="max-w-7xl mx-auto">
+      <AdminPageHeader
+        title="Mail messages"
+        subtitle="View and reply to inbound and outbound email threads"
+      />
+
+      <Card bordered={false} className="shadow-sm" styles={{ body: { padding: 0 } }}>
+    <div className="flex h-[calc(100vh-10rem)] bg-white overflow-hidden relative">
 
       {/* ─── Toast Alert ─── */}
       {alert.show && (
@@ -755,6 +764,8 @@ const MailMessages = () => {
           </div>
         </div>
       )}
+    </div>
+      </Card>
     </div>
   );
 };

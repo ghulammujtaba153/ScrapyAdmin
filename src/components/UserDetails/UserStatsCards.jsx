@@ -1,72 +1,75 @@
 import React from 'react';
-import { FaDollarSign, FaSearch, FaDatabase, FaCreditCard, FaChartLine, FaCheckCircle } from 'react-icons/fa';
+import { Row, Col, Card, Statistic } from 'antd';
+import {
+    DollarOutlined,
+    CreditCardOutlined,
+    SearchOutlined,
+    DatabaseOutlined,
+    CheckCircleOutlined,
+} from '@ant-design/icons';
 
 const UserStatsCards = ({ stats }) => {
     if (!stats) return null;
 
-    const statsData = [
+    const cards = [
         {
-            title: 'Total Spent',
-            value: `$${stats.totalSpent?.toLocaleString() || 0}`,
-            icon: <FaDollarSign />,
-            color: 'bg-green-100',
-            iconColor: 'text-green-600',
-            description: 'Lifetime spending'
+            title: 'Total spent',
+            value: stats.totalSpent || 0,
+            prefix: <DollarOutlined style={{ color: '#0F792C' }} />,
+            precision: 2,
+            suffix: undefined,
+            formatter: (v) => `$${Number(v).toLocaleString()}`,
+            description: 'Lifetime spending',
         },
         {
-            title: 'Total Subscriptions',
+            title: 'Total subscriptions',
             value: stats.totalSubscriptions || 0,
-            icon: <FaCreditCard />,
-            color: 'bg-blue-100',
-            iconColor: 'text-blue-600',
-            description: 'All time'
+            prefix: <CreditCardOutlined style={{ color: '#1677ff' }} />,
+            description: 'All time',
         },
         {
-            title: 'Total Searches',
+            title: 'Total searches',
             value: stats.totalSearches || 0,
-            icon: <FaSearch />,
-            color: 'bg-purple-100',
-            iconColor: 'text-purple-600',
-            description: `${stats.searchesThisMonth || 0} this month`
+            prefix: <SearchOutlined style={{ color: '#722ed1' }} />,
+            description: `${stats.searchesThisMonth || 0} this month`,
         },
         {
-            title: 'Records Scraped',
-            value: stats.totalRecords?.toLocaleString() || 0,
-            icon: <FaDatabase />,
-            color: 'bg-orange-100',
-            iconColor: 'text-orange-600',
-            description: 'Total data collected'
+            title: 'Records scraped',
+            value: stats.totalRecords || 0,
+            prefix: <DatabaseOutlined style={{ color: '#fa8c16' }} />,
+            formatter: (v) => Number(v).toLocaleString(),
+            description: 'Total data collected',
         },
         {
-            title: 'Active Subscription',
-            value: stats.hasActiveSubscription ? 'Yes' : 'No',
-            icon: <FaCheckCircle />,
-            color: stats.hasActiveSubscription ? 'bg-emerald-100' : 'bg-red-100',
-            iconColor: stats.hasActiveSubscription ? 'text-emerald-600' : 'text-red-600',
-            description: stats.hasActiveSubscription ? 'Currently active' : 'No active plan'
-        }
+            title: 'Active subscription',
+            value: stats.hasActiveSubscription ? 1 : 0,
+            prefix: (
+                <CheckCircleOutlined
+                    style={{ color: stats.hasActiveSubscription ? '#52c41a' : '#ff4d4f' }}
+                />
+            ),
+            formatter: () => (stats.hasActiveSubscription ? 'Yes' : 'No'),
+            description: stats.hasActiveSubscription ? 'Currently active' : 'No active plan',
+        },
     ];
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            {statsData.map((stat, index) => (
-                <div 
-                    key={index} 
-                    className="bg-white rounded-xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-shadow duration-300"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                            <p className="text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
-                            <p className="text-xs text-gray-400 mt-1">{stat.description}</p>
-                        </div>
-                        <div className={`p-3 rounded-full ${stat.color}`}>
-                            <span className={`text-xl ${stat.iconColor}`}>{stat.icon}</span>
-                        </div>
-                    </div>
-                </div>
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            {cards.map((stat) => (
+                <Col xs={24} sm={12} lg={8} xl={24 / 5} key={stat.title}>
+                    <Card bordered={false} className="shadow-sm" size="small">
+                        <Statistic
+                            title={stat.title}
+                            value={stat.value}
+                            prefix={stat.prefix}
+                            precision={stat.precision}
+                            formatter={stat.formatter}
+                        />
+                        <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{stat.description}</div>
+                    </Card>
+                </Col>
             ))}
-        </div>
+        </Row>
     );
 };
 

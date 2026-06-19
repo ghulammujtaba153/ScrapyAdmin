@@ -2,18 +2,57 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../config/url';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaPaperPlane } from 'react-icons/fa';
+import {
+    Table,
+    Card,
+    Input,
+    Select,
+    Button,
+    Tag,
+    Space,
+    Typography,
+    Tooltip,
+    Avatar,
+    Flex,
+} from 'antd';
+import {
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    EyeOutlined,
+    SendOutlined,
+    UserOutlined,
+    SearchOutlined,
+    ReloadOutlined,
+} from '@ant-design/icons';
 import UserModal from '../components/UserModal';
 import SendPaymentLinkModal from '../components/SendPaymentLinkModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AlertModal from '../components/AlertModal';
+
+const { Title, Text } = Typography;
+
+const STATUS_OPTIONS = [
+    { value: '', label: 'All status' },
+    { value: 'under_review', label: 'Under review' },
+    { value: 'active', label: 'Active' },
+    { value: 'blocked', label: 'Blocked' },
+    { value: 'invited', label: 'Invited' },
+];
+
+const ACCOUNT_TAG = {
+    subscriber_owner: { color: 'purple', label: 'Subscriber · Team owner' },
+    subscriber: { color: 'blue', label: 'Subscriber' },
+    invited_member: { color: 'gold', label: 'Invited member' },
+};
 
 const UserManagement = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const [pageSize] = useState(10);
     const [search, setSearch] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
@@ -26,28 +65,22 @@ const UserManagement = () => {
         title: '',
         message: '',
         onConfirm: () => {},
-        type: 'primary'
+        type: 'primary',
     });
 
     const openConfirmModal = (title, message, onConfirm, type = 'primary') => {
-        setConfirmModalState({
-            isOpen: true,
-            title,
-            message,
-            onConfirm,
-            type
-        });
+        setConfirmModalState({ isOpen: true, title, message, onConfirm, type });
     };
 
     const closeConfirmModal = () => {
-        setConfirmModalState(prev => ({ ...prev, isOpen: false }));
+        setConfirmModalState((prev) => ({ ...prev, isOpen: false }));
     };
 
     const [alertModalState, setAlertModalState] = useState({
         isOpen: false,
         title: '',
         message: '',
-        type: 'info'
+        type: 'info',
     });
 
     const showAlert = (title, message, type = 'info') => {
@@ -55,41 +88,29 @@ const UserManagement = () => {
     };
 
     const closeAlert = () => {
-        setAlertModalState(prev => ({ ...prev, isOpen: false }));
+        setAlertModalState((prev) => ({ ...prev, isOpen: false }));
     };
 
     const fetchUsers = async () => {
         setLoading(true);
         try {
             const res = await axios.get(`${BASE_URL}/auth/users`, {
-                params: {
-                    page,
-                    limit: 10,
-                    search,
-                    status: statusFilter
-                }
+                params: { page, limit: pageSize, search, status: statusFilter },
             });
             setUsers(res.data.users);
-            setTotalPages(res.data.totalPages);
+            setTotalUsers(res.data.totalUsers ?? 0);
         } catch (error) {
-            console.error("Error fetching users", error);
+            console.error('Error fetching users', error);
+            showAlert('Error', 'Failed to load users', 'error');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            fetchUsers();
-        }, 500);
-
+        const delayDebounceFn = setTimeout(fetchUsers, 400);
         return () => clearTimeout(delayDebounceFn);
     }, [page, search, statusFilter]);
-
-    const handleSearchChange = (e) => {
-        setSearch(e.target.value);
-        setPage(1); // Reset to page 1 on search
-    };
 
     const handleInvite = () => {
         setCurrentUser(null);
@@ -107,39 +128,38 @@ const UserManagement = () => {
 
     const handleDelete = (id) => {
         openConfirmModal(
-            "Delete User",
-            "Are you sure you want to delete this user? This action cannot be undone.",
+            'Delete user',
+            'Are you sure you want to delete this user? This action cannot be undone.',
             async () => {
                 try {
                     await axios.delete(`${BASE_URL}/auth/deleteUser/${id}`);
-                    setUsers(prev => prev.filter(u => u._id !== id));
+                    setUsers((prev) => prev.filter((u) => u._id !== id));
+                    setTotalUsers((prev) => Math.max(0, prev - 1));
                 } catch (error) {
-                    console.error("Error deleting user", error);
-                    showAlert("Error", "Failed to delete user", "error");
+                    console.error('Error deleting user', error);
+                    showAlert('Error', 'Failed to delete user', 'error');
                 }
             },
-            "danger"
+            'danger'
         );
-    };
-
-    const handleSave = () => {
-        fetchUsers(); // Refresh list after save/update
     };
 
     const handleStatusChange = (userId, newStatus) => {
         openConfirmModal(
-            "Change Status",
-            `Are you sure you want to change this user's status to ${newStatus.replace('_', ' ')}?`,
+            'Change status',
+            `Change this user's status to "${newStatus.replace('_', ' ')}"?`,
             async () => {
                 try {
                     await axios.put(`${BASE_URL}/auth/update/${userId}`, { status: newStatus });
-                    setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: newStatus } : u));
+                    setUsers((prev) =>
+                        prev.map((u) => (u._id === userId ? { ...u, status: newStatus } : u))
+                    );
                 } catch (error) {
-                    console.error("Error updating status", error);
-                    showAlert("Error", "Failed to update status", "error");
+                    console.error('Error updating status', error);
+                    showAlert('Error', 'Failed to update status', 'error');
                 }
             },
-            "warning"
+            'warning'
         );
     };
 
@@ -150,267 +170,270 @@ const UserManagement = () => {
 
     const handleSendPaymentLink = async (paymentLink) => {
         if (!paymentLinkUser) return;
-
         try {
             await axios.post(`${BASE_URL}/auth/send-payment-link/${paymentLinkUser._id}`, { paymentLink });
-            showAlert("Success", 'Payment link email sent successfully', 'success');
+            showAlert('Success', 'Payment link email sent successfully', 'success');
         } catch (error) {
             console.error('Error sending payment link', error);
-            showAlert("Error", error.response?.data?.message || 'Failed to send payment link', 'error');
+            showAlert('Error', error.response?.data?.message || 'Failed to send payment link', 'error');
             throw error;
         }
     };
 
+    const columns = [
+            {
+                title: 'User',
+                key: 'user',
+                fixed: 'left',
+                width: 220,
+                render: (_, u) => (
+                    <Flex align="center" gap={12}>
+                        <Avatar
+                            style={{ backgroundColor: '#0F792C' }}
+                            icon={!u.name ? <UserOutlined /> : undefined}
+                        >
+                            {u.name?.charAt(0)?.toUpperCase()}
+                        </Avatar>
+                        <div>
+                            <Text strong>{u.name || '—'}</Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                {u.email}
+                            </Text>
+                        </div>
+                    </Flex>
+                ),
+            },
+            {
+                title: 'Role',
+                dataIndex: 'role',
+                width: 100,
+                render: (role) => (
+                    <Tag color={role === 'admin' ? 'green' : 'default'}>{role || 'user'}</Tag>
+                ),
+            },
+            {
+                title: 'Type',
+                dataIndex: 'userType',
+                width: 90,
+                render: (_, u) => (
+                    <Tag>{(u.userType || u.type || 'local').toUpperCase()}</Tag>
+                ),
+            },
+            {
+                title: 'Account',
+                dataIndex: 'accountType',
+                width: 160,
+                render: (accountType) => {
+                    const cfg = ACCOUNT_TAG[accountType];
+                    return cfg ? (
+                        <Tag color={cfg.color}>{cfg.label}</Tag>
+                    ) : (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            No subscription
+                        </Text>
+                    );
+                },
+            },
+            {
+                title: 'Team / invitation',
+                key: 'team',
+                width: 200,
+                render: (_, u) => {
+                    if (u.invitedBy) {
+                        return (
+                            <div>
+                                <Text style={{ fontSize: 12 }}>
+                                    Invited by <Text strong>{u.invitedBy.name}</Text>
+                                </Text>
+                                <br />
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                    {u.invitedBy.email}
+                                </Text>
+                                {u.teamName && (
+                                    <>
+                                        <br />
+                                        <Text type="secondary" style={{ fontSize: 11 }}>
+                                            Team: {u.teamName}
+                                        </Text>
+                                    </>
+                                )}
+                            </div>
+                        );
+                    }
+                    if (u.invitedMembers?.length > 0) {
+                        return (
+                            <div>
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                    Invited {u.invitedMembers.length} member(s)
+                                </Text>
+                                {u.invitedMembers.slice(0, 2).map((m) => (
+                                    <div key={m._id}>
+                                        <Text style={{ fontSize: 12 }}>{m.name}</Text>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    }
+                    return <Text type="secondary">—</Text>;
+                },
+            },
+            {
+                title: 'Status',
+                dataIndex: 'status',
+                width: 150,
+                render: (status, u) => (
+                    <Select
+                        size="small"
+                        value={status || 'under_review'}
+                        style={{ width: 130 }}
+                        options={STATUS_OPTIONS.filter((o) => o.value !== '')}
+                        onChange={(val) => handleStatusChange(u._id, val)}
+                        status={status === 'blocked' ? 'error' : undefined}
+                    />
+                ),
+            },
+            {
+                title: 'Country',
+                dataIndex: 'country',
+                width: 100,
+                render: (country) => country || '—',
+            },
+            {
+                title: 'Joined',
+                dataIndex: 'createdAt',
+                width: 110,
+                render: (date) =>
+                    date ? new Date(date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—',
+            },
+            {
+                title: 'Payment',
+                key: 'payment',
+                width: 130,
+                render: (_, u) =>
+                    String(u.userType || '').toLowerCase() === 'intl' ? (
+                        <Button
+                            type="link"
+                            size="small"
+                            icon={<SendOutlined />}
+                            onClick={() => handleOpenPaymentLinkModal(u)}
+                        >
+                            Send link
+                        </Button>
+                    ) : (
+                        <Text type="secondary" style={{ fontSize: 11 }}>
+                            Local flow
+                        </Text>
+                    ),
+            },
+            {
+                title: 'Actions',
+                key: 'actions',
+                fixed: 'right',
+                width: 120,
+                render: (_, u) => (
+                    <Space size="small">
+                        <Tooltip title="View details">
+                            <Button
+                                type="text"
+                                icon={<EyeOutlined />}
+                                onClick={() => handleViewUser(u._id)}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Edit">
+                            <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(u)} />
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                            <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => handleDelete(u._id)}
+                            />
+                        </Tooltip>
+                    </Space>
+                ),
+            },
+        ];
+
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-
-                <div className="flex gap-4 w-full md:w-auto">
-                    <div className="relative w-full md:w-64">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                            <FaSearch />
-                        </span>
-                        <input
-                            type="text"
-                            placeholder="Search users..."
+        <div className="max-w-[1600px] mx-auto">
+            <Card bordered={false} className="shadow-sm">
+                <Flex
+                    justify="space-between"
+                    align="flex-start"
+                    wrap="wrap"
+                    gap={16}
+                    style={{ marginBottom: 24 }}
+                >
+                    <div>
+                        <Title level={3} style={{ margin: 0 }}>
+                            User management
+                        </Title>
+                        <Text type="secondary">
+                            Manage subscribers, invited members, and account status
+                        </Text>
+                    </div>
+                    <Space wrap>
+                        <Input
+                            allowClear
+                            placeholder="Search name or email…"
+                            prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
                             value={search}
-                            onChange={handleSearchChange}
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                            style={{ width: 260 }}
                         />
-                    </div>
-                    
-                    <select
-                        value={statusFilter}
-                        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                        }}
-                    >
-                        <option value="">All Status</option>
-                        <option value="under_review">Under Review</option>
-                        <option value="active">Active</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
+                        <Select
+                            value={statusFilter}
+                            options={STATUS_OPTIONS}
+                            onChange={(val) => {
+                                setStatusFilter(val);
+                                setPage(1);
+                            }}
+                            style={{ width: 160 }}
+                        />
+                        <Button icon={<ReloadOutlined />} onClick={fetchUsers}>
+                            Refresh
+                        </Button>
+                        <Button type="primary" icon={<PlusOutlined />} onClick={handleInvite}>
+                            Invite user
+                        </Button>
+                    </Space>
+                </Flex>
 
-                    <button
-                        onClick={handleInvite}
-                        className="flex items-center bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition duration-300 whitespace-nowrap shadow-sm"
-                    >
-                        <FaPlus className="mr-2" /> Invite User
-                    </button>
-                </div>
-            </div>
+                <Flex gap={12} wrap style={{ marginBottom: 16 }}>
+                    <Tag color="green" style={{ padding: '4px 12px', fontSize: 13 }}>
+                        Total: {totalUsers}
+                    </Tag>
+                </Flex>
 
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full leading-normal">
-                        <thead>
-                            <tr>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Email
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Role
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    User Type
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Account
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Team / Invitation
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Country
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Created At
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Payment Link
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan="11" className="text-center py-4">Loading...</td></tr>
-                            ) : users.length === 0 ? (
-                                <tr><td colSpan="11" className="text-center py-4">No users found.</td></tr>
-                            ) : users.map((u) => (
-                                <tr key={u._id}>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <div className="flex items-center">
-                                            <div className="ml-3">
-                                                <p className="text-gray-900 whitespace-no-wrap font-semibold">
-                                                    {u.name}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p className="text-gray-900 whitespace-no-wrap">{u.email}</p>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${u.role === 'admin' ? 'text-green-900' : 'text-gray-900'}`}>
-                                            <span aria-hidden className={`absolute inset-0 ${u.role === 'admin' ? 'bg-green-200' : 'bg-gray-200'} opacity-50 rounded-full`}></span>
-                                            <span className="relative">{u.role}</span>
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p className="text-gray-900 whitespace-no-wrap">{u.userType || u.type || '-'}</p>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        {u.accountType === 'subscriber_owner' ? (
-                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                Subscriber · Team owner
-                                            </span>
-                                        ) : u.accountType === 'subscriber' ? (
-                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                Subscriber
-                                            </span>
-                                        ) : u.accountType === 'invited_member' ? (
-                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-                                                Invited member
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400 text-xs">No subscription</span>
-                                        )}
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        {u.invitedBy ? (
-                                            <div>
-                                                <p className="text-gray-900 text-xs font-medium">
-                                                    Invited by {u.invitedBy.name}
-                                                </p>
-                                                <p className="text-gray-500 text-xs">{u.invitedBy.email}</p>
-                                                {u.teamName && (
-                                                    <p className="text-gray-400 text-xs mt-0.5">Team: {u.teamName}</p>
-                                                )}
-                                            </div>
-                                        ) : u.invitedMembers?.length > 0 ? (
-                                            <div>
-                                                <p className="text-gray-500 text-xs mb-1">Invited:</p>
-                                                {u.invitedMembers.map((m) => (
-                                                    <div key={m._id} className="mb-1">
-                                                        <p className="text-gray-900 text-xs font-medium">{m.name}</p>
-                                                        <p className="text-gray-500 text-xs">{m.email}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <span className="text-gray-400 text-xs">—</span>
-                                        )}
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <select
-                                            value={u.status || 'under_review'}
-                                            onChange={(e) => handleStatusChange(u._id, e.target.value)}
-                                            className={`relative inline-block px-2 py-1 font-semibold leading-tight rounded-full border border-gray-200 focus:ring-2 focus:ring-primary cursor-pointer text-xs
-                                                ${(u.status === 'active') ? 'bg-green-100 text-green-800' : 
-                                                  (u.status === 'blocked') ? 'bg-red-100 text-red-800' : 
-                                                  (u.status === 'under_review') ? 'bg-yellow-100 text-yellow-800' : 
-                                                  'bg-gray-100 text-gray-800'}`}
-                                        >
-                                            <option value="under_review">Under Review</option>
-                                            <option value="active">Active</option>
-                                            <option value="blocked">Blocked</option>
-                                            <option value="invited">Invited</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p className="text-gray-900 whitespace-no-wrap">{u.country || '-'}</p>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p className="text-gray-900 whitespace-no-wrap">
-                                            {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
-                                        </p>
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        {String(u.userType || '').toLowerCase() === 'intl' ? (
-                                            <button
-                                                onClick={() => handleOpenPaymentLinkModal(u)}
-                                                className="inline-flex items-center px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-semibold"
-                                                title="Send payment link"
-                                            >
-                                                <FaPaperPlane className="mr-2" />
-                                                Send Link
-                                            </button>
-                                        ) : (
-                                            <span className="text-gray-400 text-xs">Local users use the standard flow</span>
-                                        )}
-                                    </td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <div className="flex items-center justify-center whitespace-nowrap">
-                                            <button
-                                                onClick={() => handleViewUser(u._id)}
-                                                className="text-green-600 hover:text-green-900 mx-2"
-                                                title="View Details"
-                                            >
-                                                <FaEye />
-                                            </button>
-                                            <button
-                                                onClick={() => handleEdit(u)}
-                                                className="text-primary hover:text-primary/70 mx-2"
-                                                title="Edit"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(u._id)}
-                                                className="text-red-600 hover:text-red-900 mx-2"
-                                                title="Delete"
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
-                    <span className="text-xs xs:text-sm text-gray-900">
-                        Showing Page {page} of {totalPages}
-                    </span>
-                    <div className="inline-flex mt-2 xs:mt-0">
-                        <button
-                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                            disabled={page === 1}
-                            className={`text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            Prev
-                        </button>
-                        <button
-                            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={page === totalPages || totalPages === 0}
-                            className={`text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r ${page === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+                <Table
+                    rowKey="_id"
+                    columns={columns}
+                    dataSource={users}
+                    loading={loading}
+                    scroll={{ x: 1400 }}
+                    pagination={{
+                        current: page,
+                        pageSize,
+                        total: totalUsers,
+                        showSizeChanger: false,
+                        showTotal: (total, range) =>
+                            `${range[0]}-${range[1]} of ${total} users`,
+                        onChange: (p) => setPage(p),
+                    }}
+                    size="middle"
+                />
+            </Card>
 
             <UserModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 user={currentUser}
-                onSave={handleSave}
+                onSave={fetchUsers}
                 showAlert={showAlert}
             />
 

@@ -24,7 +24,7 @@ const DashboardLayout = () => {
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} />
+        <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
           <Outlet />
         </main>

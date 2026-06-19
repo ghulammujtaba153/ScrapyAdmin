@@ -1,5 +1,15 @@
 import React from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaGlobe, FaVenusMars, FaBriefcase, FaWallet, FaRocket } from 'react-icons/fa';
+import { Card, Avatar, Tag, Typography, Descriptions, Divider } from 'antd';
+import {
+    MailOutlined,
+    GlobalOutlined,
+    CalendarOutlined,
+    RocketOutlined,
+    WalletOutlined,
+    IdcardOutlined,
+} from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 const UserInfoCard = ({ user }) => {
     if (!user) return null;
@@ -9,105 +19,107 @@ const UserInfoCard = ({ user }) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
-    const getStatusColor = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'active':
-                return 'bg-green-100 text-green-800';
-            case 'inactive':
-                return 'bg-red-100 text-red-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const getRoleColor = (role) => {
-        switch (role?.toLowerCase()) {
-            case 'admin':
-                return 'bg-purple-100 text-purple-800';
-            default:
-                return 'bg-primary/10 text-primary';
-        }
-    };
+    const statusColor =
+        user.status?.toLowerCase() === 'active'
+            ? 'success'
+            : user.status?.toLowerCase() === 'blocked'
+              ? 'error'
+              : 'warning';
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            {/* Header */}
-            <div className="bg-primary px-6 py-8">
-                <div className="flex items-center">
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-primary text-3xl font-bold shadow-lg">
+        <Card bordered={false} className="shadow-sm" styles={{ body: { padding: 0 } }}>
+            <div
+                style={{
+                    background: 'linear-gradient(135deg, #0F792C 0%, #34d399 100%)',
+                    padding: '24px',
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <Avatar size={72} style={{ backgroundColor: '#fff', color: '#0F792C', fontSize: 28, fontWeight: 700 }}>
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    <div className="ml-5">
-                        <h2 className="text-2xl font-bold text-white">{user.name}</h2>
-                        <p className="text-white/80">{user.email}</p>
-                        <div className="flex gap-2 mt-2">
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.role)}`}>
-                                {user.role?.toUpperCase()}
-                            </span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(user.status)}`}>
-                                {user.status?.toUpperCase()}
-                            </span>
+                    </Avatar>
+                    <div>
+                        <Title level={4} style={{ color: '#fff', margin: 0 }}>
+                            {user.name}
+                        </Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.85)' }}>{user.email}</Text>
+                        <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <Tag color="purple">{user.role?.toUpperCase()}</Tag>
+                            <Tag color={statusColor}>{user.status?.replace('_', ' ').toUpperCase()}</Tag>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Subscription Highlights */}
-            <div className="px-6 py-4 bg-primary/5 border-y border-primary/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-md">
-                        <FaRocket />
-                    </div>
+            <div
+                style={{
+                    padding: '16px 24px',
+                    background: '#f6ffed',
+                    borderBottom: '1px solid #f0f0f0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <RocketOutlined style={{ fontSize: 20, color: '#0F792C' }} />
                     <div>
-                        <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Current Plan</p>
-                        <h4 className="font-black text-gray-900">{user.planName || 'No Active Plan'}</h4>
+                        <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+                            Current plan
+                        </Text>
+                        <br />
+                        <Text strong>{user.planName || 'No active plan'}</Text>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Expiry Date</p>
-                    <h4 className="font-black text-gray-900">
-                        {user.planExpiry ? formatDate(user.planExpiry) : (user.planName ? 'Lifetime' : 'N/A')}
-                    </h4>
+                <div style={{ textAlign: 'right' }}>
+                    <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+                        Expiry
+                    </Text>
+                    <br />
+                    <Text strong>
+                        {user.planExpiry ? formatDate(user.planExpiry) : user.planName ? 'Lifetime' : 'N/A'}
+                    </Text>
                 </div>
             </div>
 
-            {/* Info Grid */}
-            <div className="p-6 space-y-6">
-                <div>
-                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Subscription Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InfoItem icon={<FaRocket />} label="Plan Name" value={user.planName || 'N/A'} />
-                        <InfoItem icon={<FaWallet />} label="Amount Paid" value={user.planAmount || 'N/A'} />
-                        <InfoItem icon={<FaCalendarAlt />} label="Expiry Date" value={user.planExpiry ? formatDate(user.planExpiry) : (user.planName ? 'Lifetime' : 'N/A')} />
-                        <InfoItem icon={<FaCalendarAlt />} label="Member Since" value={formatDate(user.createdAt)} />
-                    </div>
-                </div>
+            <div style={{ padding: 24 }}>
+                <Divider orientation="left" plain>
+                    Subscription details
+                </Divider>
+                <Descriptions column={1} size="small">
+                    <Descriptions.Item label={<><RocketOutlined /> Plan</>}>
+                        {user.planName || 'N/A'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label={<><WalletOutlined /> Amount paid</>}>
+                        {user.planAmount || 'N/A'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label={<><CalendarOutlined /> Expiry</>}>
+                        {user.planExpiry ? formatDate(user.planExpiry) : user.planName ? 'Lifetime' : 'N/A'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label={<><CalendarOutlined /> Member since</>}>
+                        {formatDate(user.createdAt)}
+                    </Descriptions.Item>
+                </Descriptions>
 
-                <div className="pt-6 border-t border-gray-100">
-                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Personal Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InfoItem icon={<FaEnvelope />} label="Email Address" value={user.email} />
-                        <InfoItem icon={<FaGlobe />} label="Country" value={user.country || 'N/A'} />
-                        <InfoItem icon={<FaBriefcase />} label="About User" value={user.aboutUser || 'N/A'} />
-                    </div>
-                </div>
+                <Divider orientation="left" plain>
+                    Personal information
+                </Divider>
+                <Descriptions column={1} size="small">
+                    <Descriptions.Item label={<><MailOutlined /> Email</>}>{user.email}</Descriptions.Item>
+                    <Descriptions.Item label={<><GlobalOutlined /> Country</>}>
+                        {user.country || 'N/A'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label={<><IdcardOutlined /> About</>}>
+                        {user.aboutUser || 'N/A'}
+                    </Descriptions.Item>
+                </Descriptions>
             </div>
-        </div>
+        </Card>
     );
 };
-
-const InfoItem = ({ icon, label, value }) => (
-    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-        <span className="text-primary mt-1">{icon}</span>
-        <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
-            <p className="text-gray-800 font-medium">{value}</p>
-        </div>
-    </div>
-);
 
 export default UserInfoCard;

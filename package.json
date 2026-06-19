@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.5",
+    "antd": "^6.4.4",
     "axios": "^1.13.2",
     "html2canvas": "^1.4.1",
     "jodit-react": "^5.3.21",
